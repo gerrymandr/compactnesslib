@@ -4,12 +4,17 @@
 #include <vector>
 #include <cmath>
 #include <memory>
+#include <map>
+#include <string>
+#include <any>
 
 class Point2D;
 class Polygon;
 class Ring;
 class MultiPolygon;
 class Geometry;
+
+typedef std::map<std::string,std::any> Props;
 
 typedef std::pair<bool, double>   CachedValue;
 
@@ -22,6 +27,8 @@ typedef std::vector<MultiPolygon> MultiPolygons;
 static const double DEG_TO_RAD = M_PI/180.0;
 static const double RAD_TO_DEG = 180.0/M_PI;
 
+void PrintProps(const Props &ps);
+
 class Geometry {
  protected:
   mutable bool valid = false;
@@ -30,6 +37,11 @@ class Geometry {
   virtual double maxX() const = 0;
   virtual double minY() const = 0;
   virtual double maxY() const = 0;
+  virtual double avgX() const = 0;
+  virtual double avgY() const = 0;
+  virtual double sumX() const = 0;
+  virtual double sumY() const = 0;
+  virtual unsigned points() const = 0;
   virtual double area () const = 0;
   virtual double perim() const = 0;
   virtual void toRadians() = 0;
@@ -51,6 +63,11 @@ class Point2D : public Geometry {
   double maxX() const override;
   double minY() const override;
   double maxY() const override;
+  double avgX() const override;
+  double avgY() const override;
+  double sumX() const override;
+  double sumY() const override;
+  unsigned points() const override;
   void toRadians() override;
   void toDegrees() override;
   double area() const override;
@@ -67,6 +84,11 @@ class Ring : public Geometry, public Points {
   double maxX() const override;
   double minY() const override;
   double maxY() const override;
+  double avgX() const override;
+  double avgY() const override;
+  double sumX() const override;
+  double sumY() const override;
+  unsigned points() const override;
   double area() const override;
   double perim() const override;
   void toRadians() override;
@@ -86,6 +108,11 @@ class Polygon : public Geometry {
   double maxX() const override;
   double minY() const override;
   double maxY() const override;
+  double avgX() const override;
+  double avgY() const override;
+  double sumX() const override;
+  double sumY() const override;
+  unsigned points() const override;
   double area() const override;
   double perim() const override;
   void toRadians() override;
@@ -99,10 +126,16 @@ class Polygon : public Geometry {
 
 class MultiPolygon : public Geometry, public Polygons {
  public:
+  Props props;
   double minX() const override;
   double maxX() const override;
   double minY() const override;
   double maxY() const override;
+  double avgX() const override;
+  double avgY() const override;
+  double sumX() const override;
+  double sumY() const override;
+  unsigned points() const override;
   double area() const override;
   double perim() const override;
   void toRadians() override;

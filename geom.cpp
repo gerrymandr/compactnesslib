@@ -4,8 +4,28 @@
 #include <limits>
 #include <cassert>
 #include <stdexcept>
+#include <algorithm>
+#include <numeric>
 #include <iostream>
 #include "doctest.h"
+
+
+void PrintProps(const Props &ps){
+  for(const auto &p: ps){
+    if(typeid(int) == p.second.type()) {
+      std::cout<<p.first<<" = "<<std::any_cast<int>(p.second)<<std::endl;
+    } else if(typeid(long) == p.second.type()) {
+      std::cout<<p.first<<" = "<<std::any_cast<long>(p.second)<<std::endl;
+    } else if(typeid(double) == p.second.type()) {
+      std::cout<<p.first<<" = "<<std::any_cast<double>(p.second)<<std::endl;
+    } else if(typeid(std::string) == p.second.type()) {
+      std::cout<<p.first<<" = "<<std::any_cast<std::string>(p.second).c_str()<<std::endl;
+    } else {
+      std::cerr<<"Unrecognized property type '"<<p.second.type().name()<<"'!"<<std::endl;
+    }
+  }
+}
+
 
 
 inline double EuclideanDistance(const Point2D &a, const Point2D &b){
@@ -77,12 +97,17 @@ void Point2D::toDegrees() {
   assert(-90<=y && y<=90);
 }
 
-double Point2D::minX()  const { return x; }
-double Point2D::maxX()  const { return x; }
-double Point2D::minY()  const { return y; }
-double Point2D::maxY()  const { return y; }
-double Point2D::area()  const { return 0; }
-double Point2D::perim() const { return 0; }
+double Point2D::minX()     const { return x; }
+double Point2D::maxX()     const { return x; }
+double Point2D::minY()     const { return y; }
+double Point2D::maxY()     const { return y; }
+double Point2D::avgX()     const { return x; }
+double Point2D::avgY()     const { return y; }
+double Point2D::sumX()     const { return x; }
+double Point2D::sumY()     const { return y; }
+unsigned Point2D::points() const { return 1; }
+double Point2D::area()     const { return 0; }
+double Point2D::perim()    const { return 0; }
 bool   Point2D::containsPoint(const Point2D &xy) const { return x==xy.x && y==xy.y; }
 double Point2D::hullArea() const { return 0; }
 double Point2D::diameter() const { return 0; }
@@ -92,9 +117,8 @@ void Point2D::print() const {
 }
 
 double Ring::minX() const {
-  static double minx = std::numeric_limits<double>::infinity();
-  if(valid)
-    return minx;
+  double minx = std::numeric_limits<double>::infinity();
+  if(valid) return minx;
 
   for(const auto &p: *this)
     minx = std::min(p.x,minx);
@@ -103,9 +127,8 @@ double Ring::minX() const {
 }
 
 double Ring::maxX() const {
-  static double maxx = std::numeric_limits<double>::infinity();
-  if(valid)
-    return maxx;
+  double maxx = std::numeric_limits<double>::infinity();
+  if(valid) return maxx;
 
   for(const auto &p: *this)
     maxx = std::min(p.x,maxx);
@@ -114,9 +137,8 @@ double Ring::maxX() const {
 }
 
 double Ring::minY() const {
-  static double miny = std::numeric_limits<double>::infinity();
-  if(valid)
-    return miny;
+  double miny = std::numeric_limits<double>::infinity();
+  if(valid) return miny;
 
   for(const auto &p: *this)
     miny = std::min(p.y,miny);
@@ -125,9 +147,8 @@ double Ring::minY() const {
 }
 
 double Ring::maxY() const {
-  static double maxy = std::numeric_limits<double>::infinity();
-  if(valid)
-    return maxy;
+  double maxy = std::numeric_limits<double>::infinity();
+  if(valid) return maxy;
 
   for(const auto &p: *this)
     maxy = std::min(p.y,maxy);
@@ -135,10 +156,45 @@ double Ring::maxY() const {
   return maxy;
 }
 
+double Ring::avgX() const {
+  double avgx = 0;
+  if(valid) return avgx;
+
+  for(const auto &p: *this)
+    avgx += p.x;
+
+  avgx = avgx/size();
+  
+  return avgx;
+}
+
+double Ring::avgY() const {
+  double avgy = 0;
+  if(valid) return avgy;
+
+  for(const auto &p: *this)
+    avgy += p.y;
+
+  avgy = avgy/size();
+  
+  return avgy;
+}
+
+double Ring::sumX()     const { 
+  return std::accumulate(begin(),end(),0.0,[](const double a, const Point2D &b){ return a+b.x; });
+}
+
+double Ring::sumY()     const { 
+  return std::accumulate(begin(),end(),0.0,[](const double a, const Point2D &b){ return a+b.x; });
+}
+
+unsigned Ring::points() const { 
+  return size(); 
+}
+
 double Ring::area() const {
-  static double area = 0;
-  if(valid)
-    return area;
+  double area = 0;
+  if(valid) return area;
 
   const auto &self = *this;
 
@@ -155,9 +211,8 @@ double Ring::area() const {
 }
 
 double Ring::perim() const {
-  static double perim = 0;
-  if(valid)
-    return perim;
+  double perim = 0;
+  if(valid) return perim;
 
   if(size()==1)
     return 0;
@@ -249,7 +304,7 @@ double Ring::hullArea() const {
 }
 
 double Ring::diameter() const {
-  static double maxdist = 0;
+  double maxdist = 0;
   if(valid) return maxdist;
 
   const auto hull = getHull();
@@ -270,8 +325,11 @@ void Ring::print() const {
 
 
 
+
+
+
 double Polygon::minX() const {
-  static double minx=std::numeric_limits<double>::infinity();
+  double minx=std::numeric_limits<double>::infinity();
   if(valid) return minx;
 
   for(const auto &p: outer)
@@ -281,7 +339,7 @@ double Polygon::minX() const {
 }
 
 double Polygon::maxX() const {
-  static double maxx=-std::numeric_limits<double>::infinity();
+  double maxx=-std::numeric_limits<double>::infinity();
   if(valid) return maxx;
 
   for(const auto &p: outer)
@@ -291,7 +349,7 @@ double Polygon::maxX() const {
 }
 
 double Polygon::minY() const {
-  static double miny=std::numeric_limits<double>::infinity();
+  double miny=std::numeric_limits<double>::infinity();
   if(valid) return miny;
 
   for(const auto &p: outer)
@@ -300,12 +358,38 @@ double Polygon::minY() const {
 }
 
 double Polygon::maxY() const {
-  static double maxy=-std::numeric_limits<double>::infinity();
+  double maxy=-std::numeric_limits<double>::infinity();
   if(valid) return maxy;
 
   for(const auto &p: outer)
     maxy=std::max(p.maxY(),maxy);
   return maxy;
+}
+
+double Polygon::avgX() const {
+  return sumX()/points();
+}
+
+double Polygon::avgY() const {
+  return sumY()/points();
+}
+
+double Polygon::sumX()     const { 
+  double sum = outer.sumX();
+  sum += std::accumulate(holes.begin(),holes.end(),0.0,[](const double a, const Ring &b){ return a+b.sumX(); });
+  return sum;
+}
+
+double Polygon::sumY()     const { 
+  double sum = outer.sumY();
+  sum += std::accumulate(holes.begin(),holes.end(),0.0,[](const double a, const Ring &b){ return a+b.sumY(); });
+  return sum;
+}
+
+unsigned Polygon::points() const { 
+  unsigned count = outer.points();
+  count += std::accumulate(holes.begin(),holes.end(),0,[](const double a, const Ring &b){ return a+b.points(); });
+  return count;
 }
 
 void Polygon::toRadians() {
@@ -323,7 +407,7 @@ void Polygon::toDegrees() {
 }
 
 double Polygon::area() const {
-  static double area = 0;
+  double area = 0;
   if(valid) return area;
 
   area += outer.area();
@@ -334,7 +418,7 @@ double Polygon::area() const {
 }
 
 double Polygon::perim() const {
-  static double perim = 0;
+  double perim = 0;
   if(valid) return perim;
 
   perim += outer.perim();
@@ -384,7 +468,7 @@ void Polygon::print() const {
 
 
 double MultiPolygon::minX() const {
-  static double minx = std::numeric_limits<double>::infinity();
+  double minx = std::numeric_limits<double>::infinity();
   if(valid) return minx;
 
   for(const auto &p: *this)
@@ -394,7 +478,7 @@ double MultiPolygon::minX() const {
 }
 
 double MultiPolygon::maxX() const {
-  static double maxx = std::numeric_limits<double>::infinity();
+  double maxx = std::numeric_limits<double>::infinity();
   if(valid) return maxx;
 
   for(const auto &p: *this)
@@ -404,7 +488,7 @@ double MultiPolygon::maxX() const {
 }
 
 double MultiPolygon::minY() const {
-  static double miny=std::numeric_limits<double>::infinity();
+  double miny=std::numeric_limits<double>::infinity();
   if(valid) return miny;
 
   for(const auto &p: *this)
@@ -414,7 +498,7 @@ double MultiPolygon::minY() const {
 }
 
 double MultiPolygon::maxY() const {
-  static double maxy=std::numeric_limits<double>::infinity();
+  double maxy=std::numeric_limits<double>::infinity();
   if(valid) return maxy;
 
   for(const auto &p: *this)
@@ -423,8 +507,28 @@ double MultiPolygon::maxY() const {
   return maxy;
 }
 
+double MultiPolygon::avgX() const {
+  return sumX()/points();
+}
+
+double MultiPolygon::avgY() const {
+  return sumY()/points();
+}
+
+double MultiPolygon::sumX()     const { 
+  return std::accumulate(begin(),end(),0.0,[](const double a, const Polygon &b){ return a+b.sumX(); });
+}
+
+double MultiPolygon::sumY()     const { 
+  return std::accumulate(begin(),end(),0.0,[](const double a, const Polygon &b){ return a+b.sumY(); });
+}
+
+unsigned MultiPolygon::points() const { 
+  return std::accumulate(begin(),end(),0,[](const double a, const Polygon &b){ return a+b.points(); });
+}
+
 double MultiPolygon::area() const {
-  static double area=0;
+  double area=0;
   if(valid) return area;
 
   for(const auto &p: *this)
@@ -434,7 +538,7 @@ double MultiPolygon::area() const {
 }
 
 double MultiPolygon::perim() const {
-  static double perim=0;
+  double perim=0;
   if(valid) return perim;
 
   for(const auto &p: *this)
@@ -463,7 +567,7 @@ bool MultiPolygon::containsPoint(const Point2D &xy) const {
 }
 
 double MultiPolygon::hullArea() const {
-  static double harea=0;
+  double harea=0;
   if(valid) return harea;
 
   for(const auto &p: *this)
@@ -473,7 +577,7 @@ double MultiPolygon::hullArea() const {
 }
 
 double MultiPolygon::diameter() const {
-  static double diam = 0;
+  double diam = 0;
   if(valid) return diam;
 
   if(size()>1)
