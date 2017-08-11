@@ -11,7 +11,7 @@ namespace complib {
   double ScoreReock       (const MultiPolygon &mp);
   GeoCollection ReadShapefile(std::string filename, std::string layername);
   void WriteShapefile(const GeoCollection &mps, std::string filename, std::string layername);
-  void CalculateAllScores(MultiPolygon &mps);
+  void CalculateAllScores(GeoCollection &mps);
 }
 
 #endif
