@@ -128,7 +128,7 @@ MultiPolygon ParseFeature(const T &d){
     throw std::runtime_error("Unexpected data type - skipping!");
 }
 
-GeoCollection ReadGeoJSON(std::string filename){
+GeoCollection ReadGeoJSON(std::string geojson){
 
   // 1. Parse a JSON string into DOM.
   rj::Document d;
@@ -146,10 +146,8 @@ GeoCollection ReadGeoJSON(std::string filename){
     throw std::runtime_error("Not a FeatureCollection!");
 
   GeoCollection mps;
-  for(const auto &f: d["features"].GetArray()){
-    std::cout<<"."<<std::endl;
+  for(const auto &f: d["features"].GetArray())
     mps.push_back(ParseFeature(f.GetObject()));
-  }
 
   // // 3. Stringify the DOM
   // rj::StringBuffer buffer;
