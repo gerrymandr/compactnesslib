@@ -1,5 +1,5 @@
 #include "shapefile.hpp"
-#include <ogrsf_frmts.h>
+#include "shapelib/shapefil.h"
 #include <iostream>
 #include <stdexcept>
 #include <memory>
@@ -90,34 +90,107 @@ MultiPolygon ReadOGRMultiPolygon(const OGRMultiPolygon &ompoly){
 }
 
 GeoCollection ReadShapefile(std::string filename, std::string layername){
-  GDALAllRegister();
-  GDALDataset *poDS;
-  poDS = (GDALDataset*) GDALOpenEx(filename.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
+  int nShapeType;
+  int nEntities;
+  int i;
+  int iPart;
+  int bValidate     = 0;
+  int nInvalidCount = 0;
+  int bHeaderOnly   = 0;
+  const char *pszPlus;
+  double adfMinBound[4];
+  double adfMaxBound[4];
+  int nPrecision = 15;
+
+
+  SHPHandle *poDS = ShpOpen(filename.c_str(), "rb");
   if( poDS == NULL )
     throw std::runtime_error("Failed to open shapefile '" + filename + "'!");
 
   GeoCollection mgons;
 
-  OGRLayer *poLayer;
-  poLayer = poDS->GetLayerByName(layername.c_str());
-  if(poLayer==NULL)
-    throw std::runtime_error("Specified layer name not found!");
-
-  char *srs;
-  poLayer->GetSpatialRef()->exportToProj4(&srs);
-  mgons.srs = srs;
-  CPLFree(srs);
-
   OGRFeature *poFeature;
   poLayer->ResetReading();
-  while( (poFeature = poLayer->GetNextFeature()) != NULL ){
-    OGRFeatureDefn *poFDefn = poLayer->GetLayerDefn();
-    const auto props = ReadOGRFields(*poFeature,*poFDefn);
-    OGRGeometry *poGeometry;
-    poGeometry = poFeature->GetGeometryRef();
+  while(int i=0;i<nEntities;i++){
+    SHPObject *const psShape = SHPReadObject( hSHP, i );
 
-    if(poGeometry==NULL)
-      continue;
+    if(psShape==NULL)
+      throw std::runtime_error("Couldn't load shape!");
+
+
+
+
+
+
+
+      if( psShape->nParts > 0 && psShape->panPartStart[0] != 0 )
+      {
+          fprintf( stderr, "panPartStart[0] = %d, not zero as expected.\n",
+                   psShape->panPartStart[0] );
+      }
+
+      for( j = 0, iPart = 1; j < psShape->nVertices; j++ )
+      {
+          const char  *pszPartType = "";
+
+          if( j == 0 && psShape->nParts > 0 )
+              pszPartType = SHPPartTypeName( psShape->panPartType[0] );
+          
+          if( iPart < psShape->nParts
+              && psShape->panPartStart[iPart] == j )
+          {
+              pszPartType = SHPPartTypeName( psShape->panPartType[iPart] );
+              iPart++;
+              pszPlus = "+";
+          }
+          else
+              pszPlus = " ";
+
+          if( psShape->bMeasureIsUsed )
+              printf("   %s (%.*g,%.*g, %.*g, %.*g) %s \n",
+                     pszPlus,
+                     nPrecision, psShape->padfX[j],
+                     nPrecision, psShape->padfY[j],
+                     nPrecision, psShape->padfZ[j],
+                     nPrecision, psShape->padfM[j],
+                     pszPartType );
+          else
+              printf("   %s (%.*g,%.*g, %.*g) %s \n",
+                     pszPlus,
+                     nPrecision, psShape->padfX[j],
+                     nPrecision, psShape->padfY[j],
+                     nPrecision, psShape->padfZ[j],
+                     pszPartType );
+      }
+
+      if( bValidate )
+      {
+          int nAltered = SHPRewindObject( hSHP, psShape );
+
+          if( nAltered > 0 )
+          {
+              printf( "  %d rings wound in the wrong direction.\n",
+                      nAltered );
+              nInvalidCount++;
+          }
+      }
+      
+      SHPDestroyObject( psShape );
+    }
+
+    SHPClose( hSHP );
+
+    if( bValidate )
+    {
+        printf( "%d object has invalid ring orderings.\n", nInvalidCount );
+    }
+
+
+
+
+
+
+
 
     auto geom_type = wkbFlatten(poGeometry->getGeometryType());
 
@@ -136,7 +209,7 @@ GeoCollection ReadShapefile(std::string filename, std::string layername){
 
     OGRFeature::DestroyFeature( poFeature );
   }
-  GDALClose( poDS );
+  SHPClose( poDS );
 
   return mgons;
 }
