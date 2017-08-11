@@ -89,19 +89,24 @@ MultiPolygon ReadOGRMultiPolygon(const OGRMultiPolygon &ompoly){
   return mpoly;
 }
 
-MultiPolygons ReadShapefile(std::string filename, std::string layername){
+GeoCollection ReadShapefile(std::string filename, std::string layername){
   GDALAllRegister();
   GDALDataset *poDS;
   poDS = (GDALDataset*) GDALOpenEx(filename.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
   if( poDS == NULL )
     throw std::runtime_error("Failed to open shapefile '" + filename + "'!");
 
-  MultiPolygons mgons;
+  GeoCollection mgons;
 
   OGRLayer *poLayer;
   poLayer = poDS->GetLayerByName(layername.c_str());
   if(poLayer==NULL)
     throw std::runtime_error("Specified layer name not found!");
+
+  char *srs;
+  poLayer->GetSpatialRef()->exportToProj4(&srs);
+  mgons.srs = srs;
+  CPLFree(srs);
 
   OGRFeature *poFeature;
   poLayer->ResetReading();
@@ -141,7 +146,7 @@ MultiPolygons ReadShapefile(std::string filename, std::string layername){
 
 
 
-void WriteShapefile(const MultiPolygons &mps, std::string filename, std::string layername){
+void WriteShapefile(const GeoCollection &mps, std::string filename, std::string layername){
   const char *pszDriverName = "ESRI Shapefile";
   //const char *pszDriverName = "GeoJSON";
 

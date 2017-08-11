@@ -40,6 +40,19 @@ double ScoreReock(const MultiPolygon &mp){
   return area/circ_area;
 }
 
+void CalculateAllScores(MultiPolygon &mps){
+  #pragma omp parallel for
+  for(unsigned int i=0;i<mps.size();i++){
+    const auto &mp = mps[i]
+    mp.props["perim"]      = mp.perim();
+    mp.props["area"]       = mp.area();
+    mp.props["PolsbyPopp"] = complib::ScorePolsbyPopper(mp);
+    mp.props["Schwartzbe"] = complib::ScoreSchwartzberg(mp);
+    mp.props["ConvexHull"] = complib::ScoreConvexHull  (mp);
+    mp.props["Reock"]      = complib::ScoreReock       (mp);
+  }
+}
+
 }
 
 

@@ -146,4 +146,9 @@ class MultiPolygon : public Geometry, public Polygons {
   void print() const override;
 };
 
+class GeoCollection : public MultiPolygons {
+ public:
+  std::string srs;
+};
+
 #endif
