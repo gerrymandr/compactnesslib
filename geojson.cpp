@@ -2,6 +2,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include "compactengine.hpp"
+#include "geojson.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -11,8 +12,6 @@
 namespace rj = rapidjson;
 
 namespace complib {
-
-GeoCollection ReadGeoJSON(std::string filename); //TODO
 
 template<class T>
 Point2D ParsePoint(const T &p){
@@ -53,6 +52,33 @@ Polygon ParsePolygon(const T &coor){
     mp.holes.push_back(ParseRing(coor[i]));
 
   return mp;
+}
+
+template<class T>
+std::map<std::string, std::any> GetProperties(const T &d){
+  std::map<std::string, std::any> props;
+  for (rj::Value::ConstMemberIterator itr = d.MemberBegin(); itr != d.MemberEnd(); ++itr){
+    std::any prop;
+    switch(itr->value.GetType()){
+      case 0:
+        prop = "NULL";break;
+      case 1:
+        prop = "False";break;
+      case 2:
+        prop = "True";break;
+      case 3:
+        throw std::runtime_error("Object cannot be a property, yet!");
+      case 4:
+        throw std::runtime_error("Array cannot be a property, yet!");
+      case 5:
+        prop = itr->value.GetString();break;
+      case 6:
+        prop = itr->value.GetDouble();break;
+      default:
+        throw std::runtime_error("Unrecognized value!");
+    }
+    props[itr->name.GetString()] = prop;
+  }
 }
 
 template<class T>
@@ -102,10 +128,7 @@ MultiPolygon ParseFeature(const T &d){
     throw std::runtime_error("Unexpected data type - skipping!");
 }
 
-GeoCollection ReadGeoJSONFile(std::string filename){
-  std::ifstream fin(filename);
-
-  std::string geojson((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
+GeoCollection ReadGeoJSON(std::string filename){
 
   // 1. Parse a JSON string into DOM.
   rj::Document d;
@@ -123,12 +146,10 @@ GeoCollection ReadGeoJSONFile(std::string filename){
     throw std::runtime_error("Not a FeatureCollection!");
 
   GeoCollection mps;
-  for(const auto &f: d["features"].GetArray())
+  for(const auto &f: d["features"].GetArray()){
+    std::cout<<"."<<std::endl;
     mps.push_back(ParseFeature(f.GetObject()));
-
-  // 2. Modify it by DOM.
-  // rj::Value& s = d["type"];
-  
+  }
 
   // // 3. Stringify the DOM
   // rj::StringBuffer buffer;
@@ -137,7 +158,17 @@ GeoCollection ReadGeoJSONFile(std::string filename){
   // // Output {"project":"rapidjson","stars":11}
   // std::cout << buffer.GetString() << std::endl;
 
+  std::cout<<"Found features = "<<mps.size()<<std::endl;
+
   return mps;
+}
+
+GeoCollection ReadGeoJSONFile(std::string filename){
+  std::ifstream fin(filename);
+
+  std::string geojson((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
+
+  return ReadGeoJSON(geojson);
 }
 
 }
