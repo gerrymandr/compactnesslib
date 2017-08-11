@@ -627,7 +627,7 @@ TEST_CASE("Point2D: Conversion to Degrees"){
 
 
 
-
+/*
 TEST_CASE("Polygon"){
   Polygon p;
   Point2D a(-93,45);
@@ -647,4 +647,4 @@ TEST_CASE("Polygon"){
   CHECK(p.exterior[2].y==doctest::Approx(c.y));
   p.containsPoint(Point2D(-92,47));
   p.containsPoint(Point2D(-94,47));
-}
+}*/
