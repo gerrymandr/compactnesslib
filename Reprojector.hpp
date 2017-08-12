@@ -4,6 +4,8 @@
 #include <string>
 #include "geom.hpp"
 
+namespace complib {
+
 class Reprojector {
  public:
   std::string in_projection;
@@ -17,5 +19,7 @@ void ReprojectPoint2D(Point2D &x, const Reprojector &t);
 void ReprojectRing(Ring &x, const Reprojector &t);
 void ReprojectPolygon(Polygon &x, const Reprojector &t);
 void ReprojectMultiPolygon(MultiPolygon &x, const Reprojector &t);
+
+}
 
 #endif

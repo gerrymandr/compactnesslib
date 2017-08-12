@@ -1,5 +1,7 @@
 #include "Reprojector.hpp"
 
+namespace complib {
+
 void Reprojector::operator()(Point2D &p) const {
 
 }
@@ -33,4 +35,4 @@ void ReprojectMultiPolygon(MultiPolygon &x, const Reprojector &rp){
     ReprojectPolygon(p,rp);
 }
 
-
+}

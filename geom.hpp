@@ -8,6 +8,8 @@
 #include <string>
 #include <any>
 
+namespace complib {
+
 class Point2D;
 class Polygon;
 class Ring;
@@ -23,9 +25,6 @@ typedef std::vector<Point2D>      Points;
 typedef std::vector<Polygon>      Polygons;
 typedef std::vector<Ring>         Rings;
 typedef std::vector<MultiPolygon> MultiPolygons;
-
-static const double DEG_TO_RAD = M_PI/180.0;
-static const double RAD_TO_DEG = 180.0/M_PI;
 
 void PrintProps(const Props &ps);
 
@@ -150,5 +149,7 @@ class GeoCollection : public MultiPolygons {
  public:
   std::string srs;
 };
+
+}
 
 #endif

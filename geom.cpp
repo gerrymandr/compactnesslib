@@ -9,6 +9,10 @@
 #include <iostream>
 #include "doctest.h"
 
+static const double DEG_TO_RAD = M_PI/180.0;
+static const double RAD_TO_DEG = 180.0/M_PI;
+
+namespace complib {
 
 void PrintProps(const Props &ps){
   for(const auto &p: ps){
@@ -596,14 +600,14 @@ void MultiPolygon::print() const {
   }
 }
 
-
+}
 
 
 
 
 
 TEST_CASE("Point2D: Conversion to Radians"){
-  Point2D p(-93, 45);
+  complib::Point2D p(-93, 45);
   p.toRadians();
   CHECK(p.x==doctest::Approx(-93*DEG_TO_RAD));
   CHECK(p.y==doctest::Approx(45*DEG_TO_RAD));
@@ -612,7 +616,7 @@ TEST_CASE("Point2D: Conversion to Radians"){
 
 
 TEST_CASE("Point2D: Conversion to Degrees"){
-  Point2D p(-93*DEG_TO_RAD, 45*DEG_TO_RAD);
+  complib::Point2D p(-93*DEG_TO_RAD, 45*DEG_TO_RAD);
   p.toDegrees();
   CHECK(p.x==doctest::Approx(-93));
   CHECK(p.y==doctest::Approx(45));

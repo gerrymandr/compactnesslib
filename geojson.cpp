@@ -3,11 +3,12 @@
 #include "rapidjson/stringbuffer.h"
 #include "compactengine.hpp"
 #include "geojson.hpp"
-
+#include "utility.hpp"
 #include <iostream>
 #include <fstream>
 #include <streambuf>
 #include <stdexcept>
+#include <sstream>
 
 namespace rj = rapidjson;
 
@@ -167,6 +168,35 @@ GeoCollection ReadGeoJSONFile(std::string filename){
   std::string geojson((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
 
   return ReadGeoJSON(geojson);
+}
+
+std::string OutScoreJSON(const std::string id, const GeoCollection &gc){
+  std::ostringstream oss;
+
+  const bool use_id = !id.empty();
+
+  oss<<"{";
+  for(unsigned int i=0;i<gc.size();i++){
+    oss<<"\t\"";
+    if(use_id)
+      oss<<gc[i].props.at(id);
+    else
+      oss<<i;
+    oss<<"\":{";
+    for(unsigned int sn=0;sn<score_names.size();sn++){
+      if(gc[i].props.count(score_names[sn]))
+        oss<<"\t\t{\""<<score_names[sn]<<"\":"<<gc[i].props.at(score_names[sn])<<"}";
+      if(sn<score_names.size()-1)
+        oss<<",";
+    }
+
+    oss<<"}";
+    if(i<gc.size()-1)
+      oss<<",\n";
+  }
+  oss<<"}";
+
+  return oss.str();
 }
 
 }

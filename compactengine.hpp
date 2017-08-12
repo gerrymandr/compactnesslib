@@ -4,8 +4,11 @@
 #include "geojson.hpp"
 #include "geom.hpp"
 #include <string>
+#include <vector>
 
 namespace complib {
+  const std::vector<std::string> score_names = {{"perim","area","PolsbyPopp","Schwartzbe","ConvexHull","Reock"}};
+
   double ScorePolsbyPopper(const MultiPolygon &mp);
   double ScoreSchwartzberg(const MultiPolygon &mp);
   double ScoreConvexHull  (const MultiPolygon &mp);
