@@ -9,7 +9,7 @@ namespace complib {
   GeoCollection ReadGeoJSON(std::string filename);
   GeoCollection ReadGeoJSONFile(std::string filename);
 
-  std::string OutScoreJSON(const std::string id, const GeoCollection &gc);
+  std::string OutScoreJSON(const GeoCollection &gc, const std::string id);
 }
 
 #endif

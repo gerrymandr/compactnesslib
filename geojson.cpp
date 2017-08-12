@@ -157,8 +157,6 @@ GeoCollection ReadGeoJSON(std::string geojson){
   // // Output {"project":"rapidjson","stars":11}
   // std::cout << buffer.GetString() << std::endl;
 
-  std::cout<<"Found features = "<<mps.size()<<std::endl;
-
   return mps;
 }
 
@@ -170,31 +168,31 @@ GeoCollection ReadGeoJSONFile(std::string filename){
   return ReadGeoJSON(geojson);
 }
 
-std::string OutScoreJSON(const std::string id, const GeoCollection &gc){
+std::string OutScoreJSON(const GeoCollection &gc, const std::string id){
   std::ostringstream oss;
 
   const bool use_id = !id.empty();
 
-  oss<<"{";
+  oss<<"{\n";
   for(unsigned int i=0;i<gc.size();i++){
     oss<<"\t\"";
     if(use_id)
       oss<<gc[i].props.at(id);
     else
       oss<<i;
-    oss<<"\":{";
+    oss<<"\":{\n";
     for(unsigned int sn=0;sn<score_names.size();sn++){
       if(gc[i].props.count(score_names[sn]))
-        oss<<"\t\t{\""<<score_names[sn]<<"\":"<<gc[i].props.at(score_names[sn])<<"}";
+        oss<<"\t\t\""<<score_names[sn]<<"\":"<<gc[i].props.at(score_names[sn]);
       if(sn<score_names.size()-1)
-        oss<<",";
+        oss<<",\n";
     }
 
-    oss<<"}";
+    oss<<"\n\t}";
     if(i<gc.size()-1)
       oss<<",\n";
   }
-  oss<<"}";
+  oss<<"\n}";
 
   return oss.str();
 }
