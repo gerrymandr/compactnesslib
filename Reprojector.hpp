@@ -1,6 +1,7 @@
 #ifndef _reprojector_hpp_
 #define _reprojector_hpp_
 
+/*
 #include <string>
 #include "geom.hpp"
 
@@ -17,5 +18,5 @@ void ReprojectPoint2D(Point2D &x, const Reprojector &t);
 void ReprojectRing(Ring &x, const Reprojector &t);
 void ReprojectPolygon(Polygon &x, const Reprojector &t);
 void ReprojectMultiPolygon(MultiPolygon &x, const Reprojector &t);
-
+*/
 #endif
