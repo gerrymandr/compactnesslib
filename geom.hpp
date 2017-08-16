@@ -100,10 +100,8 @@ class Ring : public Geometry, public Points {
   void print() const override;
 };
 
-class Polygon : public Geometry {
+class Polygon : public Geometry, public Rings {
  public:
-  Ring outer;
-  Rings holes;
   double minX() const override;
   double maxX() const override;
   double minY() const override;
@@ -122,6 +120,8 @@ class Polygon : public Geometry {
   double hullArea() const override;
   double diameter() const override;
   void print() const override;
+  Ring& outer();
+  const Ring& outer() const;
 };
 
 class MultiPolygon : public Geometry, public Polygons {
