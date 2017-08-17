@@ -1,33 +1,30 @@
-#include "engine/compactengine.hpp"
+#include "../compactnesslib.hpp"
 #include <iostream>
 #include <fstream>
 
-std::ostream& operator<<(std::ostream &out, const std::any &pval){
-  if(typeid(int) == pval.type()) {
-    out<<std::any_cast<int>(pval);
-  } else if(typeid(long) == pval.type() || typeid(long long) == pval.type()) {
-    out<<std::any_cast<long long>(pval);
-  } else if(typeid(double) == pval.type()) {
-    out<<std::any_cast<double>(pval);
-  } else if(typeid(std::string) == pval.type()) {
-    out<<std::any_cast<std::string>(pval).c_str();
-  } else {
-    throw std::runtime_error("Unrecognized field type (value write) '" + std::string(pval.type().name()) + "'!");
-  }      
-  return out;
-}
-
 int main(int argc, char **argv) {
   if(argc!=2){
-    std::cerr<<"Syntax: "<<argv[0]<<" <INPUT>"<<std::endl;
+    std::cerr<<"Syntax: "<<argv[0]<<" <Input File>"<<std::endl;
     return -1;
   }
 
-  auto mpolys = complib::ReadGeoJSONFile(argv[1]);
+  std::string filename = argv[1];
 
-  complib::CalculateAllScores(mpolys);
+  complib::GeoCollection gc;
 
-  std::cout<<OutScoreJSON(mpolys, "")<<std::endl;
+  if(filename.find(".geojson")!=std::string::npos)
+    gc = complib::ReadGeoJSONFile(filename);
+  else if(filename.find(".shp")!=std::string::npos)
+    gc = complib::ReadShapefile(filename);
+  else
+    throw std::runtime_error("Unrecognized file extension! Can use '.geojson' or '.shp'.");
+
+  for(const auto &mp: gc)
+    complib::PrintProps(mp.props);
+
+  complib::CalculateAllScores(gc);
+
+  std::cout<<OutScoreJSON(gc, "")<<std::endl;
 
   return 0;
 }

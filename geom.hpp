@@ -121,6 +121,7 @@ class Polygon : public Geometry, public Rings {
 class MultiPolygon : public Geometry, public Polygons {
  public:
   Props props;
+  Scores scores;
   double minX() const override;
   double maxX() const override;
   double minY() const override;

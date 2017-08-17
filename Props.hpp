@@ -8,6 +8,7 @@
 namespace complib {
   //typedef std::map<std::string,std::any> Props;
   typedef std::map<std::string, std::string> Props;
+  typedef std::map<std::string, double> Scores;
 
   void PrintProps(const Props &ps);
 
