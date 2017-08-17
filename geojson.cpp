@@ -3,7 +3,6 @@
 #include "rapidjson/stringbuffer.h"
 #include "compactengine.hpp"
 #include "geojson.hpp"
-#include "utility.hpp"
 #include <iostream>
 #include <fstream>
 #include <streambuf>
@@ -48,38 +47,45 @@ void PrintMembers(const T &d){
 template<class T>
 Polygon ParsePolygon(const T &coor){
   Polygon mp;
-  mp.outer = ParseRing(coor[0]);
-  for(rj::SizeType i=1;i<coor.Size();i++)
-    mp.holes.push_back(ParseRing(coor[i]));
+  //First ring is the outer ring, all the others are holes
+  for(rj::SizeType i=0;i<coor.Size();i++)
+    mp.push_back(ParseRing(coor[i]));
 
   return mp;
 }
 
+// template<class T>
+// std::map<std::string, std::any> GetProperties(const T &d){
+//   std::map<std::string, std::any> props;
+//   for (rj::Value::ConstMemberIterator itr = d.MemberBegin(); itr != d.MemberEnd(); ++itr){
+//     std::any prop;
+//     switch(itr->value.GetType()){
+//       case 0:
+//         prop = "NULL";break;
+//       case 1:
+//         prop = "False";break;
+//       case 2:
+//         prop = "True";break;
+//       case 3:
+//         throw std::runtime_error("Object cannot be a property, yet!");
+//       case 4:
+//         throw std::runtime_error("Array cannot be a property, yet!");
+//       case 5:
+//         prop = itr->value.GetString();break;
+//       case 6:
+//         prop = itr->value.GetDouble();break;
+//       default:
+//         throw std::runtime_error("Unrecognized value!");
+//     }
+//     props[itr->name.GetString()] = prop;
+//   }
+// }
+
 template<class T>
-std::map<std::string, std::any> GetProperties(const T &d){
-  std::map<std::string, std::any> props;
-  for (rj::Value::ConstMemberIterator itr = d.MemberBegin(); itr != d.MemberEnd(); ++itr){
-    std::any prop;
-    switch(itr->value.GetType()){
-      case 0:
-        prop = "NULL";break;
-      case 1:
-        prop = "False";break;
-      case 2:
-        prop = "True";break;
-      case 3:
-        throw std::runtime_error("Object cannot be a property, yet!");
-      case 4:
-        throw std::runtime_error("Array cannot be a property, yet!");
-      case 5:
-        prop = itr->value.GetString();break;
-      case 6:
-        prop = itr->value.GetDouble();break;
-      default:
-        throw std::runtime_error("Unrecognized value!");
-    }
-    props[itr->name.GetString()] = prop;
-  }
+Props GetProperties(const T &d){
+  Props props;
+  for (rj::Value::ConstMemberIterator itr = d.MemberBegin(); itr != d.MemberEnd(); ++itr)
+    props[itr->name.GetString()] = itr->value.GetString();
 }
 
 template<class T>
