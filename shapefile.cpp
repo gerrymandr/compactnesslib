@@ -6,6 +6,8 @@
 #include <map>
 #include "geom.hpp"
 
+namespace complib {
+
 static bool IsHole(const SHPObject *const psCShape, const int ringi){
   const int first_vtx = psCShape->panPartStart[ringi];
 
@@ -287,3 +289,5 @@ GeoCollection ReadShapefile(std::string filename){
 
 //   GDALClose( poDS );
 // }
+
+}
