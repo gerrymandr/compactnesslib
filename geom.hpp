@@ -6,7 +6,7 @@
 #include <memory>
 #include <map>
 #include <string>
-#include <any>
+//#include <any>
 
 class Point2D;
 class Polygon;
@@ -14,7 +14,8 @@ class Ring;
 class MultiPolygon;
 class Geometry;
 
-typedef std::map<std::string,std::any> Props;
+//typedef std::map<std::string,std::any> Props;
+typedef std::map<std::string, std::string> Props;
 
 typedef std::pair<bool, double>   CachedValue;
 
