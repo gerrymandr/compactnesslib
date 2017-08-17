@@ -14,24 +14,6 @@ static const double RAD_TO_DEG = 180.0/M_PI;
 
 namespace complib {
 
-void PrintProps(const Props &ps){
-  for(const auto &p: ps){
-    // if(typeid(int) == p.second.type()) {
-    //   std::cout<<p.first<<" = "<<std::any_cast<int>(p.second)<<std::endl;
-    // } else if(typeid(long) == p.second.type()) {
-    //   std::cout<<p.first<<" = "<<std::any_cast<long>(p.second)<<std::endl;
-    // } else if(typeid(double) == p.second.type()) {
-    //   std::cout<<p.first<<" = "<<std::any_cast<double>(p.second)<<std::endl;
-    // } else if(typeid(std::string) == p.second.type()) {
-    //   std::cout<<p.first<<" = "<<std::any_cast<std::string>(p.second).c_str()<<std::endl;
-    // } else {
-    //   std::cerr<<"Unrecognized property type '"<<p.second.type().name()<<"'!"<<std::endl;
-    // }
-    std::cout<<p.first<<" = "<<p.second<<std::endl;
-  }
-}
-
-
 
 inline double EuclideanDistance(const Point2D &a, const Point2D &b){
   const double xd = (a.x-b.x);

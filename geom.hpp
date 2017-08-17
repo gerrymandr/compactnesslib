@@ -4,9 +4,8 @@
 #include <vector>
 #include <cmath>
 #include <memory>
-#include <map>
 #include <string>
-//#include <any>
+#include "Props.hpp"
 
 namespace complib {
 
@@ -15,11 +14,6 @@ class Polygon;
 class Ring;
 class MultiPolygon;
 class Geometry;
-
-//typedef std::map<std::string,std::any> Props;
-typedef std::map<std::string, std::string> Props;
-
-typedef std::pair<bool, double>   CachedValue;
 
 typedef std::vector<std::shared_ptr<Geometry> > Geometries;
 typedef std::vector<Point2D>      Points;
