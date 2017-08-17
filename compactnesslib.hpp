@@ -6,5 +6,6 @@
 #include "geom.hpp"
 #include "Reprojector.hpp"
 #include "utility.hpp"
+#include "shapefile.hpp"
 
 #endif
