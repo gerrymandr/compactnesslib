@@ -25,8 +25,8 @@ static bool IsHole(const SHPObject *const psCShape, const int ringi){
   double area = 0;
 
   //The "shoelace" algorithm
-  unsigned int j = size-1;
-  for(unsigned int i=0;i<size;i++){
+  int j = size-1;
+  for(int i=0;i<size;i++){
     area += (x[j]*y[i])-(x[i]*y[j]);
     j = i;
   }
@@ -56,13 +56,14 @@ static void ReadShapeAttributes(GeoCollection &gc, std::string filename){
   for(int iRecord = 0; iRecord < DBFGetRecordCount(hDBF); iRecord++ ){        
     for(int i = 0; i < DBFGetFieldCount(hDBF); i++ ){
       char szTitle[20]; //Code example showed 12, I extend to 20 for... safety?
-      char szFormat[32];
+      //char szFormat[32];
       int  nWidth;
       int  nDecimals;
 
       //TODO: Inefficient? We could do this once for each field above and then
       //refer to a vector of the stored field info.
       const DBFFieldType eType = DBFGetFieldInfo(hDBF, i, szTitle, &nWidth, &nDecimals);
+      (void)eType;
             
       //USE IF YOU WISH TO DECODE ATTRIBUTES
       // if( DBFIsAttributeNULL( hDBF, iRecord, i ) ){
@@ -116,11 +117,8 @@ static void ReadShapeAttributes(GeoCollection &gc, std::string filename){
 void ReadShapes(GeoCollection &mgons, std::string filename){
   int nShapeType;
   int nEntities;
-  int bValidate     = false;
-  const char *pszPlus;
   double adfMinBound[4];
   double adfMaxBound[4];
-  int nPrecision = 15;
 
   SHPHandle hSHP = SHPOpen(filename.c_str(), "rb");
   if( hSHP == NULL )
