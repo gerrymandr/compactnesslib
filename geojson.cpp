@@ -86,6 +86,7 @@ Props GetProperties(const T &d){
   Props props;
   for (rj::Value::ConstMemberIterator itr = d.MemberBegin(); itr != d.MemberEnd(); ++itr)
     props[itr->name.GetString()] = itr->value.GetString();
+  return props;
 }
 
 template<class T>
