@@ -4,7 +4,7 @@
 #include <string>
 #include "geom.hpp"
 
-GeoCollection ReadShapefile(std::string filename, std::string layername);
+GeoCollection ReadShapefile(std::string filename);
 void WriteShapefile(const GeoCollection &mps, std::string filename, std::string layername);
 
 #endif
