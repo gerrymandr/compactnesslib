@@ -16,17 +16,18 @@ namespace complib {
 
 void PrintProps(const Props &ps){
   for(const auto &p: ps){
-    if(typeid(int) == p.second.type()) {
-      std::cout<<p.first<<" = "<<std::any_cast<int>(p.second)<<std::endl;
-    } else if(typeid(long) == p.second.type()) {
-      std::cout<<p.first<<" = "<<std::any_cast<long>(p.second)<<std::endl;
-    } else if(typeid(double) == p.second.type()) {
-      std::cout<<p.first<<" = "<<std::any_cast<double>(p.second)<<std::endl;
-    } else if(typeid(std::string) == p.second.type()) {
-      std::cout<<p.first<<" = "<<std::any_cast<std::string>(p.second).c_str()<<std::endl;
-    } else {
-      std::cerr<<"Unrecognized property type '"<<p.second.type().name()<<"'!"<<std::endl;
-    }
+    // if(typeid(int) == p.second.type()) {
+    //   std::cout<<p.first<<" = "<<std::any_cast<int>(p.second)<<std::endl;
+    // } else if(typeid(long) == p.second.type()) {
+    //   std::cout<<p.first<<" = "<<std::any_cast<long>(p.second)<<std::endl;
+    // } else if(typeid(double) == p.second.type()) {
+    //   std::cout<<p.first<<" = "<<std::any_cast<double>(p.second)<<std::endl;
+    // } else if(typeid(std::string) == p.second.type()) {
+    //   std::cout<<p.first<<" = "<<std::any_cast<std::string>(p.second).c_str()<<std::endl;
+    // } else {
+    //   std::cerr<<"Unrecognized property type '"<<p.second.type().name()<<"'!"<<std::endl;
+    // }
+    std::cout<<p.first<<" = "<<p.second<<std::endl;
   }
 }
 
@@ -336,7 +337,7 @@ double Polygon::minX() const {
   double minx=std::numeric_limits<double>::infinity();
   if(valid) return minx;
 
-  for(const auto &p: outer)
+  for(const auto &p: outer())
     minx = std::min(p.minX(),minx);
 
   return minx;
@@ -346,7 +347,7 @@ double Polygon::maxX() const {
   double maxx=-std::numeric_limits<double>::infinity();
   if(valid) return maxx;
 
-  for(const auto &p: outer)
+  for(const auto &p: outer())
     maxx = std::max(p.maxX(),maxx);
 
   return maxx;
@@ -356,7 +357,7 @@ double Polygon::minY() const {
   double miny=std::numeric_limits<double>::infinity();
   if(valid) return miny;
 
-  for(const auto &p: outer)
+  for(const auto &p: outer())
     miny=std::min(p.minY(),miny);
   return miny;
 }
@@ -365,7 +366,7 @@ double Polygon::maxY() const {
   double maxy=-std::numeric_limits<double>::infinity();
   if(valid) return maxy;
 
-  for(const auto &p: outer)
+  for(const auto &p: outer())
     maxy=std::max(p.maxY(),maxy);
   return maxy;
 }
@@ -379,44 +380,36 @@ double Polygon::avgY() const {
 }
 
 double Polygon::sumX()     const { 
-  double sum = outer.sumX();
-  sum += std::accumulate(holes.begin(),holes.end(),0.0,[](const double a, const Ring &b){ return a+b.sumX(); });
-  return sum;
+  return std::accumulate(begin(),end(),0.0,[](const double a, const Ring &b){ return a+b.sumX(); });
 }
 
 double Polygon::sumY()     const { 
-  double sum = outer.sumY();
-  sum += std::accumulate(holes.begin(),holes.end(),0.0,[](const double a, const Ring &b){ return a+b.sumY(); });
-  return sum;
+  return std::accumulate(begin(),end(),0.0,[](const double a, const Ring &b){ return a+b.sumY(); });
 }
 
 unsigned Polygon::points() const { 
-  unsigned count = outer.points();
-  count += std::accumulate(holes.begin(),holes.end(),0,[](const double a, const Ring &b){ return a+b.points(); });
-  return count;
+  return std::accumulate(begin(),end(),0,[](const double a, const Ring &b){ return a+b.points(); });
 }
 
 void Polygon::toRadians() {
   invalidate();
-  outer.toRadians();
-  for(auto &h: holes)
-    h.toRadians();
+  for(auto &r: *this)
+    r.toRadians();
 }
 
 void Polygon::toDegrees() {
   invalidate();
-  outer.toDegrees();
-  for(auto &h: holes)
-    h.toDegrees();
+  for(auto &r: *this)
+    r.toDegrees();
 }
 
 double Polygon::area() const {
   double area = 0;
   if(valid) return area;
 
-  area += outer.area();
-  for(auto &h: holes)
-    area -= h.area();
+  area += outer().area();
+  for(auto h=begin()+1;h!=end();h++)
+    area -= h->area();
 
   return area;
 }
@@ -425,9 +418,8 @@ double Polygon::perim() const {
   double perim = 0;
   if(valid) return perim;
 
-  perim += outer.perim();
-  for(auto &h: holes)
-    perim += h.perim();
+  for(auto &r: *this)
+    perim += r.perim();
 
   return perim;
 }
@@ -438,9 +430,9 @@ double Polygon::perim() const {
 bool Polygon::containsPoint(const Point2D &xy) const {
   unsigned int i, j;
   int c = 0;
-  for (i = 0, j = outer.size()-1; i < outer.size(); j = i++) {
-    const auto &oi = outer[i];
-    const auto &oj = outer[j];
+  for (i = 0, j = outer().size()-1; i < outer().size(); j = i++) {
+    const auto &oi = outer()[i];
+    const auto &oj = outer()[j];
     if ( ((oi.y>xy.y) != (oj.y>xy.y)) &&
      (xy.x < (oj.x-oi.x) * (xy.y-oi.y) / (oj.y-oi.y) + oi.x) )
        c = !c;
@@ -449,23 +441,31 @@ bool Polygon::containsPoint(const Point2D &xy) const {
 }
 
 Ring Polygon::getHull() const {
-  return outer.getHull();
+  return outer().getHull();
 }
 
 double Polygon::hullArea() const {
-  if(holes.size()>0)
+  if(size()>1)
     std::cerr<<"Warning: Taking the hull area of a polygon with holes!"<<std::endl;
-  return outer.hullArea();
+  return outer().hullArea();
 }
 
 double Polygon::diameter() const {
-  if(holes.size()>0)
+  if(size()>1)
     std::cerr<<"Warning: Taking the diameter of a polygon with holes!"<<std::endl;
-  return outer.diameter();
+  return outer().diameter();
 }
 
 void Polygon::print() const {
-  outer.print();
+  outer().print();
+}
+
+Ring& Polygon::outer() {
+  return front();
+}
+
+const Ring& Polygon::outer() const {
+  return front();
 }
 
 
