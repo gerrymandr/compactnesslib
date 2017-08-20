@@ -143,7 +143,7 @@ class MultiPolygon : public Geometry, public Polygons {
 
 class GeoCollection : public MultiPolygons {
  public:
-  std::string srs;
+  std::string prj_str;
 };
 
 }

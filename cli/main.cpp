@@ -19,12 +19,11 @@ int main(int argc, char **argv) {
   else
     throw std::runtime_error("Unrecognized file extension! Can use '.geojson' or '.shp'.");
 
-  for(const auto &mp: gc)
-    complib::PrintProps(mp.props);
-
   complib::CalculateAllScores(gc);
 
   std::cout<<OutScoreJSON(gc, "")<<std::endl;
+
+  WriteShapefile(gc,"/z/outshape");
 
   return 0;
 }
