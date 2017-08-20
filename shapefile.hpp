@@ -7,7 +7,7 @@
 namespace complib {
   GeoCollection ReadShapefile(std::string filename);
   void WriteShapefile(const GeoCollection &gc, const std::string filename);
-  void WriteShapeAttributes(const GeoCollection &gc, const std::string filename);
+  void WriteShapeScores(const GeoCollection &gc, const std::string filename);
 }
 
 #endif

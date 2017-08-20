@@ -41,15 +41,32 @@ double ScoreReock(const MultiPolygon &mp){
 }
 
 void CalculateAllScores(GeoCollection &mps){
+  CalculateListOfScores(mps, score_names);
+}
+
+
+void CalculateScoreFromString(MultiPolygon &mp, const std::string score){
+  if(score=="perim")
+    mp.scores[score] = mp.perim();
+  else if(score=="area")
+    mp.scores[score] = mp.area();
+  else if(score=="PolsbyPopp")
+    mp.scores[score] = complib::ScorePolsbyPopper(mp);
+  else if(score=="Schwartzbe")
+    mp.scores[score] = complib::ScoreSchwartzberg(mp);
+  else if(score=="ConvexHull")
+    mp.scores[score] = complib::ScoreConvexHull  (mp);
+  else if(score=="Reock")
+    mp.scores[score] = complib::ScoreReock       (mp);
+  else 
+    throw std::runtime_error("Unrecognized score name '" + score + "'!");
+}
+
+void CalculateListOfScores(GeoCollection &gc, const std::vector<std::string> &score_list){
   #pragma omp parallel for
-  for(unsigned int i=0;i<mps.size();i++){
-    auto &mp = mps[i];
-    mp.scores["perim"]      = mp.perim();
-    mp.scores["area"]       = mp.area();
-    mp.scores["PolsbyPopp"] = complib::ScorePolsbyPopper(mp);
-    mp.scores["Schwartzbe"] = complib::ScoreSchwartzberg(mp);
-    mp.scores["ConvexHull"] = complib::ScoreConvexHull  (mp);
-    mp.scores["Reock"]      = complib::ScoreReock       (mp);
+  for(unsigned int i=0;i<gc.size();i++){
+    for(const auto &s: score_list)
+      CalculateScoreFromString(gc[i],s);
   }
 }
 

@@ -9,11 +9,12 @@
 namespace complib {
   const std::vector<std::string> score_names = {{"perim","area","PolsbyPopp","Schwartzbe","ConvexHull","Reock"}};
 
-  double ScorePolsbyPopper(const MultiPolygon &mp);
-  double ScoreSchwartzberg(const MultiPolygon &mp);
-  double ScoreConvexHull  (const MultiPolygon &mp);
-  double ScoreReock       (const MultiPolygon &mp);
-  void CalculateAllScores(GeoCollection &mps);
+  double ScorePolsbyPopper  (const MultiPolygon &mp);
+  double ScoreSchwartzberg  (const MultiPolygon &mp);
+  double ScoreConvexHull    (const MultiPolygon &mp);
+  double ScoreReock         (const MultiPolygon &mp);
+  void CalculateAllScores   (GeoCollection &mps);
+  void CalculateListOfScores(GeoCollection &gc, const std::vector<std::string> &score_list);
 }
 
 #endif
