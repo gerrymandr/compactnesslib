@@ -64,7 +64,7 @@ void CalculateScoreFromString(MultiPolygon &mp, const std::string score){
     throw std::runtime_error("Unrecognized score name '" + score + "'!");
 }
 
-void CalculateListOfScores(GeoCollection &gc, const std::vector<std::string> &score_list){
+void CalculateListOfScores(GeoCollection &gc, std::vector<std::string> score_list){
   if(score_list.empty())
     score_list = score_names;
 

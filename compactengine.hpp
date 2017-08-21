@@ -14,7 +14,7 @@ namespace complib {
   double ScoreConvexHull    (const MultiPolygon &mp);
   double ScoreReock         (const MultiPolygon &mp);
   void CalculateAllScores   (GeoCollection &mps);
-  void CalculateListOfScores(GeoCollection &gc, const std::vector<std::string> &score_list);
+  void CalculateListOfScores(GeoCollection &gc, std::vector<std::string> score_list);
 }
 
 #endif
