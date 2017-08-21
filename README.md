@@ -23,7 +23,28 @@ structure.
 
 
 
+Available Scores/Metrics
+========================
+
+A list of the available compactness scores and how they are calculated is
+available
+[here](https://github.com/r-barnes/compactnesslib/blob/master/Scores.md).
+
+
+
 Who uses compactnesslib?
 ========================
 
-compactnesslib is a core
+compactnesslib is a core component of the Python package
+[python-mander](https://github.com/gerrymandr/python-mander)
+and the R package
+[mandeR](https://github.com/r-barnes/mandeR).
+
+
+
+Credits
+=======
+
+This package was created for the
+[Metric Geometry And Gerrymandering Group](https://sites.tufts.edu/gerrymandr/)
+as part of a hack-a-thon on August 10-11, 2017.
