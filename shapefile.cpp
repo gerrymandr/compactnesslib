@@ -313,8 +313,6 @@ void WriteShapeScores(const GeoCollection &gc, const std::string filename){
   if(hDBF==NULL)
     throw std::runtime_error("Failed to create shapefile database '" + filename + "'!");
 
-  const int fields = DBFGetFieldCount(hDBF);
-
   std::set<std::string> scoreset; //Gather all scores
   for(const auto &poly: gc)
   for(const auto &score: poly.scores)
