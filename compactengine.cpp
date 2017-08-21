@@ -65,6 +65,9 @@ void CalculateScoreFromString(MultiPolygon &mp, const std::string score){
 }
 
 void CalculateListOfScores(GeoCollection &gc, const std::vector<std::string> &score_list){
+  if(score_list.empty())
+    score_list = score_names;
+
   #pragma omp parallel for
   for(unsigned int i=0;i<gc.size();i++){
     for(const auto &s: score_list)
