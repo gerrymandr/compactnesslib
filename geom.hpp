@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <cmath>
-#include <memory>
 #include <string>
 #include "Props.hpp"
 
@@ -15,7 +14,6 @@ class Ring;
 class MultiPolygon;
 class Geometry;
 
-typedef std::vector<std::shared_ptr<Geometry> > Geometries;
 typedef std::vector<Point2D>      Points;
 typedef std::vector<Polygon>      Polygons;
 typedef std::vector<Ring>         Rings;
