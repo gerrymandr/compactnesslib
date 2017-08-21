@@ -32,6 +32,8 @@ double ScoreConvexHull(const MultiPolygon &mp){
   return area/hull_area;
 }
 
+
+//TODO: Use "https://people.inf.ethz.ch/gaertner/subdir/software/miniball.html"
 double ScoreReock(const MultiPolygon &mp){
   const double area      = mp.area();
   const double radius    = mp.diameter()/2;
