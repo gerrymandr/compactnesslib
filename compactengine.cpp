@@ -3,6 +3,7 @@
 #endif
 #include "doctest.h"
 #include "compactengine.hpp"
+#include "geom.hpp"
 #include <cmath>
 #include <vector>
 #include <stdexcept>
@@ -13,30 +14,30 @@
 namespace complib {
 
 double ScorePolsbyPopper(const MultiPolygon &mp){
-  const double area  = mp.area();
-  const double perim = mp.perim();
+  const double area  = areaOfPolygonsIncludingHoles(mp);
+  const double perim = perimPolygonOuterRings(mp);
   return 4*M_PI*area/perim/perim;
 }
 
 double ScoreSchwartzberg(const MultiPolygon &mp){
-  const double perim  = mp.perim();
-  const double area   = mp.area();
+  const double area   = areaOfPolygonsIncludingHoles(mp);
+  const double perim  = perimPolygonOuterRings(mp);
   const double radius = std::sqrt(area/M_PI);
   const double circum = 2*M_PI*radius;
   return circum/perim;
 }
 
 double ScoreConvexHull(const MultiPolygon &mp){
-  const double area      = mp.area();
-  const double hull_area = mp.hullArea();
+  const double area      = areaOfPolygonsIncludingHoles(mp);
+  const double hull_area = hullAreaPolygonOuterRings(mp);
   return area/hull_area;
 }
 
 
 //TODO: Use "https://people.inf.ethz.ch/gaertner/subdir/software/miniball.html"
 double ScoreReock(const MultiPolygon &mp){
-  const double area      = mp.area();
-  const double radius    = mp.diameter()/2;
+  const double area      = areaOfPolygonsIncludingHoles(mp);
+  const double radius    = diameterOfEntireMultiPolygon(mp)/2;
   const double circ_area = M_PI*radius*radius;
 
   return area/circ_area;
@@ -49,9 +50,9 @@ void CalculateAllScores(GeoCollection &mps){
 
 void CalculateScoreFromString(MultiPolygon &mp, const std::string score){
   if(score=="perim")
-    mp.scores[score] = mp.perim();
+    mp.scores[score] = perimPolygonOuterRings(mp);
   else if(score=="area")
-    mp.scores[score] = mp.area();
+    mp.scores[score] = areaOfPolygonsIncludingHoles(mp);
   else if(score=="PolsbyPopp")
     mp.scores[score] = complib::ScorePolsbyPopper(mp);
   else if(score=="Schwartzbe")

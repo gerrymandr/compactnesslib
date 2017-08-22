@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <string>
+#include <memory>
 #include "Props.hpp"
 
 namespace complib {
@@ -21,128 +22,64 @@ typedef std::vector<MultiPolygon> MultiPolygons;
 
 void PrintProps(const Props &ps);
 
-class Geometry {
- protected:
-  mutable bool valid = false;
- public:
-  virtual double minX() const = 0;
-  virtual double maxX() const = 0;
-  virtual double minY() const = 0;
-  virtual double maxY() const = 0;
-  virtual double avgX() const = 0;
-  virtual double avgY() const = 0;
-  virtual double sumX() const = 0;
-  virtual double sumY() const = 0;
-  virtual unsigned points() const = 0;
-  virtual double area () const = 0;
-  virtual double perim() const = 0;
-  virtual void toRadians() = 0;
-  virtual void toDegrees() = 0;
-  virtual bool containsPoint(const Point2D &xy) const = 0;
-  virtual double hullArea() const = 0;
-  virtual double diameter() const = 0;
-  virtual void print() const = 0;
-  void invalidate();
-};
-
-class Point2D : public Geometry {
+class Point2D {
  public:
   double x;
   double y;
   Point2D() = default;
   Point2D(double x0, double y0);
-  double minX() const override;
-  double maxX() const override;
-  double minY() const override;
-  double maxY() const override;
-  double avgX() const override;
-  double avgY() const override;
-  double sumX() const override;
-  double sumY() const override;
-  unsigned points() const override;
-  void toRadians() override;
-  void toDegrees() override;
-  double area() const override;
-  double perim() const override;
-  bool containsPoint(const Point2D &xy) const override;
-  double hullArea() const override;
-  double diameter() const override;
-  void print() const override;
 };
 
-class Ring : public Geometry, public Points {
+class Ring : public Points {
  public:
-  double minX() const override;
-  double maxX() const override;
-  double minY() const override;
-  double maxY() const override;
-  double avgX() const override;
-  double avgY() const override;
-  double sumX() const override;
-  double sumY() const override;
-  unsigned points() const override;
-  double area() const override;
-  double perim() const override;
-  void toRadians() override;
-  void toDegrees() override;
-  bool containsPoint(const Point2D &xy) const override;
-  Ring getHull() const;
-  double hullArea() const override;
-  double diameter() const override;
-  void print() const override;
+  Ring() = default;
+  Ring(std::vector<Point2D>::iterator first, std::vector<Point2D>::iterator last);
+  mutable std::unique_ptr<Ring> hull;
+  void getHull() const;
 };
 
-class Polygon : public Geometry, public Rings {
- public:
-  double minX() const override;
-  double maxX() const override;
-  double minY() const override;
-  double maxY() const override;
-  double avgX() const override;
-  double avgY() const override;
-  double sumX() const override;
-  double sumY() const override;
-  unsigned points() const override;
-  double area() const override;
-  double perim() const override;
-  void toRadians() override;
-  void toDegrees() override;
-  bool containsPoint(const Point2D &xy) const override;
-  Ring getHull() const;
-  double hullArea() const override;
-  double diameter() const override;
-  void print() const override;
-  Ring& outer();
-  const Ring& outer() const;
+class Polygon : public Rings {
+
 };
 
-class MultiPolygon : public Geometry, public Polygons {
+class MultiPolygon : public Polygons {
  public:
   Props props;
   Scores scores;
-  double minX() const override;
-  double maxX() const override;
-  double minY() const override;
-  double maxY() const override;
-  double avgX() const override;
-  double avgY() const override;
-  double sumX() const override;
-  double sumY() const override;
-  unsigned points() const override;
-  double area() const override;
-  double perim() const override;
-  void toRadians() override;
-  void toDegrees() override;
-  bool containsPoint(const Point2D &xy) const override;
-  double hullArea() const override;
-  double diameter() const override;
-  void print() const override;
 };
 
 class GeoCollection : public MultiPolygons {
  public:
   std::string prj_str;
 };
+
+
+
+double area(const Ring &r);
+double areaOuter(const Polygon &p);
+double areaOfPolygonsIncludingHoles(const MultiPolygon &mp);
+
+double areaHoles(const Polygon &p);
+double areaHoles(const MultiPolygon &mp);
+
+double perim(const Ring &r);
+double perimOuter(const Polygon &p);
+double perimPolygonOuterRings(const MultiPolygon &mp);
+
+double perimHoles(const Polygon &p);
+double perimHoles(const MultiPolygon &mp);
+
+double hullArea(const Ring &r);
+double hullAreaOfOuter(const Polygon &p);
+double hullAreaPolygonOuterRings(const MultiPolygon &mp);
+
+double hullAreaOfHoles(const Polygon &p);
+double hullAreaOfHoles(const MultiPolygon &mp);
+
+double diameter(const Ring &r);
+double diameterOuter(const Polygon &p);
+double diameterOfEntireMultiPolygon(const MultiPolygon &mp);
+
 
 }
 
