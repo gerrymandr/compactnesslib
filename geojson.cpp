@@ -29,10 +29,6 @@ Ring ParseRing(const json &r){
 //d["properties"].Accept(writer);
 //std::string s = sb.GetString();
 
-void PrintMembers(const json &d){
-  std::cerr<<d<<std::endl;
-}
-
 Polygon ParsePolygon(const json &coor){
   Polygon mp;
   //First ring is the outer ring, all the others are holes
