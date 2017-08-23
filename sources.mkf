@@ -1,2 +1,2 @@
-#find . -iname "*.c*" | tr "\n" " "
+#find . -iname "*.c*" | grep -v main.cpp | tr "\n" " "
 COMPACTNESS_SOURCES = shapelib/safileio.cpp shapelib/shptree.cpp shapelib/shpopen.cpp shapelib/dbfopen.cpp geom.cpp compactengine.cpp Props.cpp shapefile.cpp geojson.cpp Reprojector.cpp csv.cpp
