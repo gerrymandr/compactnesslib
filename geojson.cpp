@@ -6,6 +6,7 @@
 #include <streambuf>
 #include <stdexcept>
 #include <sstream>
+#include <string>
 
 using json = nlohmann::json;
 
@@ -15,8 +16,7 @@ namespace complib {
 //template<typename T> struct TD;
 //e.g. TD<decltype(WHAT_AM_I_VAR_NAME)> td;
 
-template<class T>
-Ring ParseRing(const T &r){
+Ring ParseRing(const json &r){
   Ring temp;
   for(const auto &c: r)
     temp.emplace_back(c[0],c[1]);
@@ -29,13 +29,11 @@ Ring ParseRing(const T &r){
 //d["properties"].Accept(writer);
 //std::string s = sb.GetString();
 
-template<class T>
-void PrintMembers(const T &d){
+void PrintMembers(const json &d){
   std::cerr<<d<<std::endl;
 }
 
-template<class T>
-Polygon ParsePolygon(const T &coor){
+Polygon ParsePolygon(const json &coor){
   Polygon mp;
   //First ring is the outer ring, all the others are holes
   for(const auto &r: coor)
@@ -44,14 +42,7 @@ Polygon ParsePolygon(const T &coor){
   return mp;
 }
 
-template<class T>
-Props GetProperties(const T &d){
-  Props props = d;
-  return props;
-}
-
-template<class T>
-const T& GetToCoordinates(const T &d){
+const json& GetToCoordinates(const json &d){
   if(d.count("geometry")){
     return d.at("geometry").at("coordinates");
   } else if(d.count("coordinates")){
@@ -61,15 +52,13 @@ const T& GetToCoordinates(const T &d){
   }
 }
 
-template<class T>
-MultiPolygon ParseTopPolygon(const T &d){
+MultiPolygon ParseTopPolygon(const json &d){
   MultiPolygon mps;
   mps.push_back(ParsePolygon(GetToCoordinates(d)));
   return mps;
 }
 
-template<class T>
-MultiPolygon ParseMultiPolygon(const T &d){
+MultiPolygon ParseMultiPolygon(const json &d){
   MultiPolygon mps;
   for(const auto &poly: GetToCoordinates(d))
     mps.emplace_back(ParsePolygon(poly));
@@ -77,17 +66,27 @@ MultiPolygon ParseMultiPolygon(const T &d){
   return mps;
 }
 
-template<class T>
-MultiPolygon ParseFeature(const T &d){
-  MultiPolygon mps;
+MultiPolygon ParseFeature(const json &d){
+  MultiPolygon mp;
 
   const std::string geotype = d["geometry"]["type"];
   if(geotype=="MultiPolygon")
-    return ParseMultiPolygon(d);
+    mp = ParseMultiPolygon(d);
   else if(geotype=="Polygon")
-    return ParseTopPolygon(d);
+    mp = ParseTopPolygon(d);
   else
     throw std::runtime_error("Unexpected data type - skipping!");
+
+
+  if(d.count("properties")){
+    const json &this_props = d["properties"];
+    for(json::const_iterator it = this_props.begin(); it != this_props.end(); ++it){
+      const json &thisval = this_props[it.key()];
+      mp.props[it.key()] = thisval.dump();
+    }
+  }
+
+  return mp;
 }
 
 GeoCollection ReadGeoJSON(const std::string geojson){
