@@ -130,8 +130,8 @@ void ReadShapes(GeoCollection &mgons, std::string filename){
 
   SHPGetInfo( hSHP, &nEntities, &nShapeType, adfMinBound, adfMaxBound );
 
-  if(nShapeType!=SHPT_POLYGON)
-    throw std::runtime_error("Can only work with polygon shapefiles!");
+  if(nShapeType!=SHPT_POLYGON && nShapeType!=SHPT_POLYGONZ)
+    throw std::runtime_error("Can only work with SHPT_POLYGON and SHPT_POLYGONZ shapefiles!");
 
   SHPObject *psShape;
   for(int i=0;i<nEntities;i++){
