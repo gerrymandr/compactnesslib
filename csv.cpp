@@ -3,6 +3,7 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
+#include <iomanip>
 
 namespace complib {
 
@@ -34,7 +35,7 @@ std::string OutScoreCSV(const GeoCollection &gc, std::string id) {
     for(const auto &sn: scores_used){
       oss<<",";
       if(gc[i].scores.count(sn)){
-        oss<<gc[i].scores.at(sn);
+        oss<<std::fixed<<std::setprecision(5)<<gc[i].scores.at(sn);
       } else {
         oss<<-9999;
       }
