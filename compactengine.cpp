@@ -68,7 +68,6 @@ void CalculateListOfScores(GeoCollection &gc, std::vector<std::string> score_lis
   else if(score_list.size()==1 && score_list.at(0)=="all")
     score_list = score_names;
 
-  #pragma omp parallel for
   for(unsigned int i=0;i<gc.size();i++){
     for(const auto &s: score_list)
       CalculateScoreFromString(gc[i],s);
