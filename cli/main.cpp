@@ -4,15 +4,18 @@
 #include <fstream>
 
 int main(int argc, char **argv) {
-  if(argc!=3){
-    std::cerr<<"Syntax: "<<argv[0]<<" <Input File> <Output File>"<<std::endl;
-    std::cerr<<"\tIf <Output File> = '-' then GeoJSON is printed to stdout."<<std::endl;
+  if(argc!=4){
+    std::cerr<<"Syntax: "<<argv[0]<<" <Input File> <Output File> <ID>"<<std::endl;
+    std::cerr<<"\tIf <Output File> = '-json' then GeoJSON is printed to stdout."<<std::endl;
+    std::cerr<<"\tIf <Output File> = '-csv' then CSV is printed to stdout."<<std::endl;
     std::cerr<<"\tIf <Output File> = 'augment', the input shapefile is augmented to include scores."<<std::endl;
+    std::cerr<<"\tIf <ID>          = The attribute to which each output should be keyed."<<std::endl;
     return -1;
   }
 
   std::string in_filename  = argv[1];
   std::string out_filename = argv[2];
+  std::string id           = argv[3];
 
   std::cout<<"Processing '"<<in_filename<<"'..."<<std::endl;
 
@@ -40,18 +43,20 @@ int main(int argc, char **argv) {
   {
     Timer tmr;
     std::cout<<"Writing..."<<std::endl;
-    if(out_filename=="-"){
-      std::cout<<OutScoreJSON(gc, "")<<std::endl;
+    if(out_filename=="-json"){
+      std::cout<<OutScoreJSON(gc, id)<<std::endl;
+    } else if(out_filename=="-csv"){
+      std::cout<<OutScoreCSV(gc, id)<<std::endl;      
     } else if(out_filename=="augment"){
       WriteShapeScores(gc, in_filename);
     } else if(out_filename.find(".geojson")!=std::string::npos){
       std::ofstream fout(out_filename);
-      fout<<complib::OutScoreJSON(gc,"");
+      fout<<complib::OutScoreJSON(gc,id);
     } else if(out_filename.find(".shp")!=std::string::npos){
       WriteShapefile(gc, out_filename);
     } else if(out_filename.find(".csv")!=std::string::npos){
       std::ofstream fout(out_filename);
-      fout<<complib::OutScoreCSV(gc,"");
+      fout<<complib::OutScoreCSV(gc,id);
     } else {
       throw std::runtime_error("Unrecognized output file directive! Can use '*.geojson' or '*.shp' or '-' or 'augment' .");
     }
