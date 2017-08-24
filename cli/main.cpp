@@ -33,6 +33,9 @@ int main(int argc, char **argv) {
     fout<<complib::OutScoreJSON(gc,"");
   } else if(out_filename.find(".shp")!=std::string::npos){
     WriteShapefile(gc, out_filename);
+  } else if(out_filename.find(".csv")!=std::string::npos){
+    std::ofstream fout(out_filename);
+    fout<<complib::OutScoreCSV(gc,"");
   } else {
     throw std::runtime_error("Unrecognized output file directive! Can use '*.geojson' or '*.shp' or '-' or 'augment' .");
   }
