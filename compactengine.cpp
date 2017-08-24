@@ -1,6 +1,3 @@
-#ifndef DOCTEST_CONFIG_DISABLE
-  #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#endif
 #include "doctest.h"
 #include "compactengine.hpp"
 #include "geom.hpp"
@@ -79,24 +76,3 @@ void CalculateListOfScores(GeoCollection &gc, std::vector<std::string> score_lis
 }
 
 }
-
-
-/*
-TEST_CASE("CountTEST"){
-  std::vector<double> x  = {{1,3,3,1, 3,5,5,3, 1,3,3,1, 3,5,5,3}};
-  std::vector<double> y  = {{1,1,3,3, 1,1,3,3, 3,3,5,5, 3,3,5,5}};
-  std::vector<double> id = {{1,1,1,1, 2,2,2,2, 3,3,3,3, 4,4,4,4}};
-
-  SUBCASE("Area"){
-    CHECK(complib::pPolygonArea(x.data(),y.data(),4)==4);
-  }
-
-  SUBCASE("ID count"){
-    auto ret = complib::PolygonAreaMulti(x,y,id);
-    CHECK(ret.size()==4);
-    for(const auto &r: ret){
-      std::cout<<r.first<<" "<<r.second<<std::endl;
-    }
-  }
-}
-*/
