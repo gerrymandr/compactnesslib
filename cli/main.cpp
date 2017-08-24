@@ -24,9 +24,9 @@ int main(int argc, char **argv) {
   {
     Timer tmr;
     std::cout<<"Loading..."<<std::endl;
-    if(in_filename.find(".geojson")!=std::string::npos)
+    if(in_filename.compare(in_filename.size()-8,8,".geojson")==0)
       gc = complib::ReadGeoJSONFile(in_filename);
-    else if(in_filename.find(".shp")!=std::string::npos)
+    else if(in_filename.compare(in_filename.size()-4,4,".shp")==0)
       gc = complib::ReadShapefile(in_filename);
     else
       throw std::runtime_error("Unrecognized input file extension! Can use '.geojson' or '.shp'.");
@@ -49,12 +49,12 @@ int main(int argc, char **argv) {
       std::cout<<OutScoreCSV(gc, id)<<std::endl;      
     } else if(out_filename=="augment"){
       WriteShapeScores(gc, in_filename);
-    } else if(out_filename.find(".geojson")!=std::string::npos){
+    } else if(out_filename.compare(out_filename.size()-8,8,".geojson")==0){
       std::ofstream fout(out_filename);
       fout<<complib::OutScoreJSON(gc,id);
-    } else if(out_filename.find(".shp")!=std::string::npos){
+    } else if(out_filename.compare(out_filename.size()-4,4,".shp")==0){
       WriteShapefile(gc, out_filename);
-    } else if(out_filename.find(".csv")!=std::string::npos){
+    } else if(out_filename.compare(out_filename.size()-4,4,".csv")==0){
       std::ofstream fout(out_filename);
       fout<<complib::OutScoreCSV(gc,id);
     } else {
