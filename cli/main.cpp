@@ -1,4 +1,5 @@
 #include "../compactnesslib.hpp"
+#include "Timer.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -13,31 +14,48 @@ int main(int argc, char **argv) {
   std::string in_filename  = argv[1];
   std::string out_filename = argv[2];
 
+  std::cout<<"Processing '"<<in_filename<<"'..."<<std::endl;
+
   complib::GeoCollection gc;
 
-  if(in_filename.find(".geojson")!=std::string::npos)
-    gc = complib::ReadGeoJSONFile(in_filename);
-  else if(in_filename.find(".shp")!=std::string::npos)
-    gc = complib::ReadShapefile(in_filename);
-  else
-    throw std::runtime_error("Unrecognized input file extension! Can use '.geojson' or '.shp'.");
+  {
+    Timer tmr;
+    std::cout<<"Loading..."<<std::endl;
+    if(in_filename.find(".geojson")!=std::string::npos)
+      gc = complib::ReadGeoJSONFile(in_filename);
+    else if(in_filename.find(".shp")!=std::string::npos)
+      gc = complib::ReadShapefile(in_filename);
+    else
+      throw std::runtime_error("Unrecognized input file extension! Can use '.geojson' or '.shp'.");
+    std::cout<<"Finished in = "<<tmr.elapsed()<<" s"<<std::endl;
+  }
 
-  complib::CalculateAllScores(gc);
+  {
+    Timer tmr;
+    std::cout<<"Scoring..."<<std::endl;
+    complib::CalculateAllScores(gc);
+    std::cout<<"Finished in = "<<tmr.elapsed()<<" s"<<std::endl;
+  }
 
-  if(out_filename=="-"){
-    std::cout<<OutScoreJSON(gc, "")<<std::endl;
-  } else if(out_filename=="augment"){
-    WriteShapeScores(gc, in_filename);
-  } else if(out_filename.find(".geojson")!=std::string::npos){
-    std::ofstream fout(out_filename);
-    fout<<complib::OutScoreJSON(gc,"");
-  } else if(out_filename.find(".shp")!=std::string::npos){
-    WriteShapefile(gc, out_filename);
-  } else if(out_filename.find(".csv")!=std::string::npos){
-    std::ofstream fout(out_filename);
-    fout<<complib::OutScoreCSV(gc,"");
-  } else {
-    throw std::runtime_error("Unrecognized output file directive! Can use '*.geojson' or '*.shp' or '-' or 'augment' .");
+  {
+    Timer tmr;
+    std::cout<<"Writing..."<<std::endl;
+    if(out_filename=="-"){
+      std::cout<<OutScoreJSON(gc, "")<<std::endl;
+    } else if(out_filename=="augment"){
+      WriteShapeScores(gc, in_filename);
+    } else if(out_filename.find(".geojson")!=std::string::npos){
+      std::ofstream fout(out_filename);
+      fout<<complib::OutScoreJSON(gc,"");
+    } else if(out_filename.find(".shp")!=std::string::npos){
+      WriteShapefile(gc, out_filename);
+    } else if(out_filename.find(".csv")!=std::string::npos){
+      std::ofstream fout(out_filename);
+      fout<<complib::OutScoreCSV(gc,"");
+    } else {
+      throw std::runtime_error("Unrecognized output file directive! Can use '*.geojson' or '*.shp' or '-' or 'augment' .");
+    }
+    std::cout<<"Finished in = "<<tmr.elapsed()<<" s"<<std::endl;
   }
 
   return 0;
