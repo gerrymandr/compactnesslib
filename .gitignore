@@ -1,3 +1,5 @@
 a.out
 *.o
 *.exe
+*.gcno
+*.gcda
