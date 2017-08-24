@@ -1679,8 +1679,8 @@ SHPReadObject( SHPHandle psSHP, int hEntity )
         || psShape->nSHPType == SHPT_ARCM
         || psShape->nSHPType == SHPT_MULTIPATCH )
     {
-        int32		nPoints, nParts;
-        int    		i, nOffset;
+        int32		nPoints, nParts, i;
+        int    		nOffset;
 
         if ( 40 + 8 + 4 > nEntitySize )
         {
@@ -1871,7 +1871,7 @@ SHPReadObject( SHPHandle psSHP, int hEntity )
 /*      big enough, but really it will only occur for the Z shapes      */
 /*      (options), and the M shapes.                                    */
 /* -------------------------------------------------------------------- */
-        if( nEntitySize >= nOffset + 16 + 8*nPoints )
+        if( nEntitySize >= (int)(nOffset + 16 + 8*nPoints ) )
         {
             memcpy( &(psShape->dfMMin), psSHP->pabyRec + nOffset, 8 );
             memcpy( &(psShape->dfMMax), psSHP->pabyRec + nOffset + 8, 8 );
@@ -1896,8 +1896,8 @@ SHPReadObject( SHPHandle psSHP, int hEntity )
              || psShape->nSHPType == SHPT_MULTIPOINTM
              || psShape->nSHPType == SHPT_MULTIPOINTZ )
     {
-        int32		nPoints;
-        int    		i, nOffset;
+        int32		nPoints, i;
+        int    		nOffset;
 
         if ( 44 + 4 > nEntitySize )
         {
@@ -2007,7 +2007,7 @@ SHPReadObject( SHPHandle psSHP, int hEntity )
 /*      big enough, but really it will only occur for the Z shapes      */
 /*      (options), and the M shapes.                                    */
 /* -------------------------------------------------------------------- */
-        if( nEntitySize >= nOffset + 16 + 8*nPoints )
+        if( nEntitySize >= (int)(nOffset + 16 + 8*nPoints ) )
         {
             memcpy( &(psShape->dfMMin), psSHP->pabyRec + nOffset, 8 );
             memcpy( &(psShape->dfMMax), psSHP->pabyRec + nOffset + 8, 8 );

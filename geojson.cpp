@@ -133,7 +133,7 @@ std::string OutScoreJSON(const GeoCollection &gc, const std::string id){
       oss<<i;
     oss<<"\":{\n";
 
-    int inserted = 0;
+    unsigned int inserted = 0;
     for(unsigned int sn=0;sn<score_names.size();sn++){
       if(gc[i].scores.count(score_names[sn])){
         oss<<"\t\t\""<<score_names[sn]<<"\":"<<gc[i].scores.at(score_names[sn]);
