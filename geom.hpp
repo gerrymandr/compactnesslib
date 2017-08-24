@@ -46,6 +46,8 @@ class MultiPolygon : public Polygons {
  public:
   Props props;
   Scores scores;
+  void toRadians();
+  void toDegrees();
 };
 
 class GeoCollection : public MultiPolygons {
