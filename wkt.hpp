@@ -7,7 +7,7 @@
 namespace complib {
 
   GeoCollection ReadWKT(std::string wktstr);
-
+  GeoCollection ReadWKTFile(std::string filename);
 }
 
 

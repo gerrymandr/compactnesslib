@@ -24,7 +24,7 @@ double GetNumber(size_t &start, const std::string &wktstr){
   TrimStr(start,wktstr);
   size_t numend = start;
   for(;numend<wktstr.size();numend++)
-    if(wktstr[numend]==' ')
+    if(wktstr[numend]==' ' || wktstr[numend]==',' || wktstr[numend]==')')
       break;
   const double ret = std::stod(wktstr.substr(start,numend-start));
   start = numend;
@@ -142,6 +142,14 @@ GeoCollection ReadWKT(std::string wktstr){
   }
 
   return gc;
+}
+
+GeoCollection ReadWKTFile(std::string filename) {
+  std::ifstream fin(filename);
+
+  std::string wktstr((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
+
+  return ReadWKT(wktstr);
 }
 
 }
