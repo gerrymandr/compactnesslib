@@ -126,7 +126,7 @@ MultiPolygon ParseMultiPolygon(size_t start, const std::string &wktstr){
 
 
 
-GeoCollection ReadWKT(const std::string &wktstr){
+GeoCollection ReadWKT(std::string wktstr){
   GeoCollection gc;
 
   size_t start = 0;
