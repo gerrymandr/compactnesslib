@@ -44,3 +44,9 @@ TEST_CASE("Circle"){
   CHECK(ScoreConvexHull(mp)==doctest::Approx(1.0));
   CHECK(ScoreReock(mp)==doctest::Approx(1.0));
 }
+
+TEST_CASE("Name lenth"){
+  //Score names can't exceed 10 characters due to shapefile limitations
+  for(auto &sn: score_names)
+    CHECK(sn.size()<=10);
+}
