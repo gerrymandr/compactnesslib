@@ -28,6 +28,8 @@ int main(int argc, char **argv) {
       gc = complib::ReadGeoJSONFile(in_filename);
     else if(in_filename.compare(in_filename.size()-4,4,".shp")==0)
       gc = complib::ReadShapefile(in_filename);
+    else if(in_filename.compare(in_filename.size()-4,4,".wkt")==0)
+      gc = complib::ReadWKTFile(in_filename);
     else
       throw std::runtime_error("Unrecognized input file extension! Can use '.geojson' or '.shp'.");
     std::cout<<"Finished in = "<<tmr.elapsed()<<" s"<<std::endl;

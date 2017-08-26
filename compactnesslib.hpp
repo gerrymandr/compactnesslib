@@ -7,5 +7,6 @@
 #include "Reprojector.hpp"
 #include "shapefile.hpp"
 #include "csv.hpp"
+#include "wkt.hpp"
 
 #endif

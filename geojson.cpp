@@ -2,6 +2,7 @@
 #include "compactengine.hpp"
 #include "geojson.hpp"
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <streambuf>
 #include <stdexcept>
@@ -136,7 +137,7 @@ std::string OutScoreJSON(const GeoCollection &gc, const std::string id){
     unsigned int inserted = 0;
     for(unsigned int sn=0;sn<score_names.size();sn++){
       if(gc[i].scores.count(score_names[sn])){
-        oss<<"\t\t\""<<score_names[sn]<<"\":"<<gc[i].scores.at(score_names[sn]);
+        oss<<"\t\t\""<<score_names[sn]<<"\":"<<std::fixed<<std::setprecision(5)<<gc[i].scores.at(score_names[sn]);
         if(inserted++<gc[i].scores.size()-1)
           oss<<",\n";
       }

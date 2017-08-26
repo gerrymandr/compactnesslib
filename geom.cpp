@@ -119,6 +119,32 @@ void Ring::getHull() const {
 
 
 
+
+
+
+void MultiPolygon::toRadians(){
+  for(auto &poly: *this)
+  for(auto &ring: poly)
+  for(auto &pt: ring){
+    pt.x *= DEG_TO_RAD;
+    pt.y *= DEG_TO_RAD;
+  }
+}
+
+void MultiPolygon::toDegrees(){
+  for(auto &poly: *this)
+  for(auto &ring: poly)
+  for(auto &pt: ring){
+    pt.x *= RAD_TO_DEG;
+    pt.y *= RAD_TO_DEG;
+  }
+}
+
+
+
+
+
+
 double area(const Ring &r){
   double area = 0;
 
