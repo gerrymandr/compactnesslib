@@ -8,10 +8,13 @@
 #include <numeric>
 #include <iostream>
 #include <memory>
+#include "clipper.h"
 #include "doctest.h"
 
 static const double DEG_TO_RAD = M_PI/180.0;
 static const double RAD_TO_DEG = 180.0/M_PI;
+
+namespace cl = ClipperLib;
 
 namespace complib {
 
@@ -252,6 +255,55 @@ double diameterOfEntireMultiPolygon(const MultiPolygon &mp){
   temp.getHull();
   return diameter(temp);
 }
+
+
+
+
+
+
+cl::Paths ConvertToClipper(const MultiPolygon &mp) {
+  cl::Paths paths;
+
+  for(const auto &poly: mp){
+    //Send in outer perimter
+    paths.emplace_back();
+    for(const auto &pt: poly.at(0))
+      paths.back().emplace_back((long long)pt.x,(long long)pt.y);
+
+    //Send in the holes
+    for(unsigned int i=1;i<poly.size();i++){
+      paths.emplace_back();
+      for(auto pt=poly.at(i).rbegin();pt!=poly.at(i).rend();pt++)
+        paths.back().emplace_back((long long)pt->x,(long long)pt->y);
+    }
+  }
+
+  return paths;
+}
+
+
+
+double IntersectionArea(const MultiPolygon &a, const MultiPolygon &b) {
+  if(a.clipper_paths.empty())
+    a.clipper_paths = ConvertToClipper(a);
+  if(b.clipper_paths.empty())
+    b.clipper_paths = ConvertToClipper(b);
+
+  cl::Clipper clpr;
+  clpr.AddPaths(a.clipper_paths, cl::ptSubject, true);
+  clpr.AddPaths(b.clipper_paths, cl::ptClip, true);
+  cl::Paths solution;
+  clpr.Execute(cl::ctIntersection, solution, cl::pftEvenOdd, cl::pftEvenOdd);
+
+  double area = 0;
+  for(const auto &path: solution)
+    area += cl::Area(path);
+  return area;
+}
+
+
+
+
 
 }
 

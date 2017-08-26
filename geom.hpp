@@ -6,6 +6,7 @@
 #include <string>
 #include <memory>
 #include "Props.hpp"
+#include "clipper.h"
 
 namespace complib {
 
@@ -48,6 +49,8 @@ class MultiPolygon : public Polygons {
   Scores scores;
   void toRadians();
   void toDegrees();
+  MultiPolygon intersect(const MultiPolygon &b) const;
+  mutable ClipperLib::Paths clipper_paths;
 };
 
 class GeoCollection : public MultiPolygons {
@@ -82,6 +85,7 @@ double diameter(const Ring &r);
 double diameterOuter(const Polygon &p);
 double diameterOfEntireMultiPolygon(const MultiPolygon &mp);
 
+double IntersectionArea(const MultiPolygon &a, const MultiPolygon &b);
 
 }
 
