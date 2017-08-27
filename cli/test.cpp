@@ -31,7 +31,7 @@ TEST_CASE("Circle"){
   //Make a "circle"
   const double density=1000;
   for(double i=0;i<density;i++)
-    ring.emplace_back(33*std::cos(2*M_PI*i/density),33*std::sin(2*M_PI*i/density));
+    ring.emplace_back(33*std::cos(-2*M_PI*i/density),33*std::sin(-2*M_PI*i/density));
   //Close the "circle"
   ring.emplace_back(33*std::cos(2*M_PI*0),33*std::sin(2*M_PI*0));
 
