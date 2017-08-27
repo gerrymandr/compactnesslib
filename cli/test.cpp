@@ -2,6 +2,7 @@
 #include "../compactnesslib.hpp"
 #include "../doctest.h"
 #include <cmath>
+#include <algorithm>
 
 using namespace complib;
 
@@ -49,4 +50,40 @@ TEST_CASE("Name lenth"){
   //Score names can't exceed 10 characters due to shapefile limitations
   for(auto &sn: score_names)
     CHECK(sn.size()<=10);
+}
+
+TEST_CASE("Intersection areas"){
+  const std::string inita = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[4,0],[4,4],[0,4],[0,0]]]}}]}";
+  const std::string initb = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[1,1],[3,1],[3,3],[1,3],[1,1]]]}}]}";
+
+  auto gca = ReadGeoJSON(inita);
+  auto gcb = ReadGeoJSON(initb);
+
+  SUBCASE("Area forward"){
+    CHECK(IntersectionArea(gca[0],gcb[0])==4);
+  }
+
+  SUBCASE("Area backward"){
+    std::reverse(gca.back().back().begin(),gca.back().back().end());
+    std::reverse(gcb.back().back().begin(),gcb.back().back().end());
+    CHECK(IntersectionArea(gca[0],gcb[0])==4);
+  }
+}
+
+TEST_CASE("Intersection areas"){
+  const std::string inita = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,2],[2,0],[2,2],[0,2],[0,0]]]}}]}";
+  const std::string initb = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[1,1],[3,1],[3,3],[1,3],[1,1]]]}}]}";
+
+  auto gca = ReadGeoJSON(inita);
+  auto gcb = ReadGeoJSON(initb);
+
+  SUBCASE("Area forward"){
+    CHECK(IntersectionArea(gca[0],gcb[0])==1);
+  }
+
+  SUBCASE("Area backward"){
+    std::reverse(gca.back().back().begin(),gca.back().back().end());
+    std::reverse(gcb.back().back().begin(),gcb.back().back().end());
+    CHECK(IntersectionArea(gca[0],gcb[0])==4);
+  }
 }
