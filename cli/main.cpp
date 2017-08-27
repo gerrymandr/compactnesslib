@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
   {
     Timer tmr;
     std::cout<<"Scoring..."<<std::endl;
-    complib::CalculateAllScores(gc);
+    complib::CalculateAllUnboundedScores(gc);
     std::cout<<"Finished in = "<<tmr.elapsed()<<" s"<<std::endl;
   }
 

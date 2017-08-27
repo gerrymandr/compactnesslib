@@ -46,38 +46,39 @@ double ScoreReock(const MultiPolygon &mp){
   return area/circ_area;
 }
 
-void CalculateAllScores(GeoCollection &mps){
-  CalculateListOfScores(mps, score_names);
+void CalculateAllUnboundedScores(GeoCollection &mps){
+  CalculateListOfUnboundedScores(mps, getListOfUnboundedScores());
 }
 
-
-void CalculateScoreFromString(MultiPolygon &mp, const std::string score){
-  if(score=="perim")
-    mp.scores[score] = perimExcludingHoles(mp);
-  else if(score=="area")
-    mp.scores[score] = areaIncludingHoles(mp);
-  else if(score=="PolsbyPopp")
-    mp.scores[score] = complib::ScorePolsbyPopper(mp);
-  else if(score=="Schwartzbe")
-    mp.scores[score] = complib::ScoreSchwartzberg(mp);
-  else if(score=="ConvexHull")
-    mp.scores[score] = complib::ScoreConvexHull  (mp);
-  else if(score=="Reock")
-    mp.scores[score] = complib::ScoreReock       (mp);
-  else 
-    throw std::runtime_error("Unrecognized score name '" + score + "'!");
-}
-
-void CalculateListOfScores(GeoCollection &gc, std::vector<std::string> score_list){
+void CalculateListOfUnboundedScores(GeoCollection &gc, std::vector<std::string> score_list){
   if(score_list.empty())
-    score_list = score_names;
+    score_list = getListOfUnboundedScores();
   else if(score_list.size()==1 && score_list.at(0)=="all")
-    score_list = score_names;
+    score_list = getListOfUnboundedScores();
 
   for(unsigned int i=0;i<gc.size();i++){
-    for(const auto &s: score_list)
-      CalculateScoreFromString(gc[i],s);
+    for(const auto &sn: score_list){
+      if(!unbounded_score_map.count(sn))
+        throw std::runtime_error("Unrecognized score name '" + sn + "'!");
+      gc[i].scores[sn] = unbounded_score_map.at(sn)(gc[i]);
+    }
   }
 }
+
+const std::vector<std::string>& getListOfUnboundedScores(){
+  static std::vector<std::string> score_names;
+  for(const auto &kv: unbounded_score_map)
+    score_names.push_back(kv.first);
+  return score_names;
+}
+
+const score_map_t unbounded_score_map({
+  // {"areaAH",            areaIncludingHoles},
+  // {"perimSH",           perimExcludingHoles},
+  // {"ScorePolsbyPopper", ScorePolsbyPopper},
+  // {"ScoreSchwartzberg", ScoreSchwartzberg},
+  {"ScoreConvexHull",   ScoreConvexHull},
+  {"ScoreReock",        ScoreReock}
+});
 
 }

@@ -66,8 +66,13 @@ TEST_CASE("Circle"){
 
 TEST_CASE("Name lenth"){
   //Score names can't exceed 10 characters due to shapefile limitations
-  for(auto &sn: score_names)
+  for(auto &sn: getListOfUnboundedScores())
     CHECK(sn.size()<=10);
+}
+
+TEST_CASE("Name Matching"){
+  for(auto &sn: getListOfUnboundedScores())
+    CHECK(unbounded_score_map.count(sn));
 }
 
 TEST_CASE("Intersection area: big square and little square"){
