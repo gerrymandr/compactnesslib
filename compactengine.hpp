@@ -12,6 +12,7 @@ namespace complib {
   double ScorePolsbyPopper  (const MultiPolygon &mp);
   double ScoreSchwartzberg  (const MultiPolygon &mp);
   double ScoreConvexHull    (const MultiPolygon &mp);
+  double ScoreConvexHullPTB (const MultiPolygon &mp, const MultiPolygon &border);
   double ScoreReock         (const MultiPolygon &mp);
   void CalculateAllScores   (GeoCollection &mps);
   void CalculateListOfScores(GeoCollection &gc, std::vector<std::string> score_list);
