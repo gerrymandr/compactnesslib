@@ -1,5 +1,5 @@
 #include "shapefile.hpp"
-#include "shapelib/shapefil.h"
+#include "shapelib/shapefil.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <memory>
