@@ -285,7 +285,7 @@ const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed){
 }
 
 
-const cl::Paths& ConvertToClipper(const MultiPolygon &mp) {
+const cl::Paths& ConvertToClipper(const MultiPolygon &mp, const bool reversed) {
   if(!mp.clipper_paths.empty())
     return mp.clipper_paths;
 
@@ -293,11 +293,11 @@ const cl::Paths& ConvertToClipper(const MultiPolygon &mp) {
 
   for(const auto &poly: mp){
     //Send in outer perimter
-    paths.push_back(ConvertToClipper(poly.at(0), false));
+    paths.push_back(ConvertToClipper(poly.at(0), reversed));
 
     //Send in the holes
     for(unsigned int i=1;i<poly.size();i++)
-      paths.push_back(ConvertToClipper(poly.at(i), true));
+      paths.push_back(ConvertToClipper(poly.at(i), !reversed));
   }
 
   std::swap(mp.clipper_paths, paths);
