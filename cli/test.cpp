@@ -6,6 +6,14 @@
 
 using namespace complib;
 
+TEST_CASE("Data test"){
+  auto gc = complib::ReadShapefile("test_data/cb_2015_us_cd114_20m.shp");
+  for(const auto &mp: gc)
+    CHECK(areaExcludingHoles(mp)>0);
+  for(const auto &mp: gc)
+    CHECK(IntersectionArea(mp,mp.getHull())>0);
+}
+
 TEST_CASE("Square Test"){
   const std::string rect2by2 = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[2,0],[2,2],[0,2],[0,0]]]}}]}";
 
