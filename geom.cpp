@@ -160,6 +160,25 @@ const Ring& MultiPolygon::getHull() const {
   return hull;
 }
 
+void MultiPolygon::reverse() {
+  for(auto &poly: *this){
+    std::reverse(poly.at(0).begin(),poly.at(0).end());
+    for(unsigned int i=1;i<poly.size();i++)
+      std::reverse(poly.at(i).begin(),poly.at(i).end());
+  }
+}
+
+void GeoCollection::reverse() {
+  for(auto &mp: *this)
+    mp.reverse();
+}
+
+void GeoCollection::correctWindingDirection(){
+  if(areaExcludingHoles(this->at(0))<0){
+    std::cerr<<"Reversed winding of polygons!"<<std::endl;
+    reverse();
+  }
+}
 
 
 

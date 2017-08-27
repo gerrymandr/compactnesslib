@@ -183,6 +183,8 @@ GeoCollection ReadShapefile(std::string filename){
   ReadShapeAttributes(mgons,filename);
   ReadShapeProj(mgons,filename);
 
+  mgons.correctWindingDirection();
+
   return mgons;
 }
 

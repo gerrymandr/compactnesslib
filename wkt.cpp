@@ -141,6 +141,8 @@ GeoCollection ReadWKT(std::string wktstr){
     throw std::runtime_error("Unrecognized geometry!");
   }
 
+  gc.correctWindingDirection();
+  
   return gc;
 }
 

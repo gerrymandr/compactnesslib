@@ -109,6 +109,8 @@ GeoCollection ReadGeoJSON(const std::string geojson){
     throw std::runtime_error("Not a FeatureCollection or MultiPolygon or Polygon!");
   }
 
+  mps.correctWindingDirection();
+
   return mps;
 }
 

@@ -56,11 +56,14 @@ class MultiPolygon : public Polygons {
   void toDegrees();
   MultiPolygon intersect(const MultiPolygon &b) const;
   mutable ClipperLib::Paths clipper_paths;
+  void reverse();
 };
 
 class GeoCollection : public MultiPolygons {
  public:
   std::string prj_str;
+  void reverse();
+  void correctWindingDirection();
 };
 
 
