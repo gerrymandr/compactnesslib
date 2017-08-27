@@ -12,6 +12,16 @@ TEST_CASE("Data test"){
     CHECK(areaExcludingHoles(mp)>0);
   for(const auto &mp: gc)
     CHECK(IntersectionArea(mp,mp.getHull())>0);
+  CHECK(gc.size()==216);
+  for(const auto &mp: gc){
+    if(mp.props.at("GEOID")=="1307"){
+      CHECK(perimIncludingHoles(mp)==doctest::Approx(171105));
+      CHECK(areaIncludingHoles(mp)==doctest::Approx(1048787000));
+    } else if(mp.props.at("GEOID")=="1226"){
+      CHECK(perimIncludingHoles(mp)==doctest::Approx(776915));
+      CHECK(areaIncludingHoles(mp)==doctest::Approx(7659883000));
+    }
+  }
 }
 
 TEST_CASE("Square Test"){
