@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 #include "Props.hpp"
-#include "clipper.h"
+#include "clipper.hpp"
 
 namespace complib {
 

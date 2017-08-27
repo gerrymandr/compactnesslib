@@ -8,7 +8,7 @@
 #include <numeric>
 #include <iostream>
 #include <memory>
-#include "clipper.h"
+#include "clipper.hpp"
 #include "doctest.h"
 
 static const double DEG_TO_RAD = M_PI/180.0;
