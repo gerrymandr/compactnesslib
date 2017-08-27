@@ -71,6 +71,7 @@ class GeoCollection : public MultiPolygons {
 double area(const Ring &r);
 double areaOuter(const Polygon &p);
 double areaOfPolygonsIncludingHoles(const MultiPolygon &mp);
+double areaExcludingHoles(const MultiPolygon &mp);
 
 double areaHoles(const Polygon &p);
 double areaHoles(const MultiPolygon &mp);

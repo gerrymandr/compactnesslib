@@ -246,6 +246,10 @@ double areaOfPolygonsIncludingHoles(const MultiPolygon &mp){
   return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaOuter(p);}); 
 }
 
+double areaExcludingHoles(const MultiPolygon &mp){
+  return areaOfPolygonsIncludingHoles(mp)-areaHoles(mp);
+}
+
 double areaHoles(const MultiPolygon &mp){
   return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaHoles(p);}); 
 }
