@@ -194,10 +194,27 @@ double area(const Ring &r){
     j = i;
   }
   
-  area = std::abs(area/2);
+  area = area/2.;
 
-  return area;
+  return std::abs(area);
 }
+
+//Produces the same answers as the foregoing, but with the opposite signedness of area
+// double area2(const Ring &r){
+//   double area = 0;
+
+//   //The "shoelace" algorithm
+//   unsigned int j = r.size()-1;
+//   for(unsigned int i=0;i<r.size();i++){
+//     area += (r[j].x * r[i].y) - (r[i].x * r[j].y);
+//     j = i;
+//   }
+  
+//   area = area/2.;
+
+//   return area;
+// }
+
 
 double perim(const Ring &r){
   double perim = 0;
