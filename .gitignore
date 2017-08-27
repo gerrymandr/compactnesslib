@@ -3,3 +3,4 @@ a.out
 *.exe
 *.gcno
 *.gcda
+CMakeFiles
