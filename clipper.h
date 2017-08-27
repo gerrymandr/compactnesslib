@@ -220,7 +220,7 @@ class ClipperBase
 public:
   ClipperBase();
   virtual ~ClipperBase();
-  bool AddPath(const Path &pg, PolyType PolyTyp, bool Closed);
+  bool AddPaths(const Path &pg, PolyType PolyTyp, bool Closed);
   bool AddPaths(const Paths &ppg, PolyType PolyTyp, bool Closed);
   virtual void Clear();
   IntRect GetBounds();
@@ -351,7 +351,7 @@ class ClipperOffset
 public:
   ClipperOffset(double miterLimit = 2.0, double roundPrecision = 0.25);
   ~ClipperOffset();
-  void AddPath(const Path& path, JoinType joinType, EndType endType);
+  void AddPaths(const Path& path, JoinType joinType, EndType endType);
   void AddPaths(const Paths& paths, JoinType joinType, EndType endType);
   void Execute(Paths& solution, double delta);
   void Execute(PolyTree& solution, double delta);
