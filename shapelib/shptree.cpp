@@ -87,7 +87,7 @@
  *
  */
 
-#include "shapefil.h"
+#include "shapefil.hpp"
 
 #include <math.h>
 #include <assert.h>
