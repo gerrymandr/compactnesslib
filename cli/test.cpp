@@ -87,3 +87,31 @@ TEST_CASE("Intersection areas"){
     CHECK(IntersectionArea(gca[0],gcb[0])==4);
   }
 }
+
+
+
+
+
+
+
+/*
+TEST_CASE("Polygon"){
+  Polygon p;
+  Point2D a(-93,45);
+  Point2D b(-93,50);
+  Point2D c(-90,50);
+  Point2D d(-90,45);
+  p.outer.push_back(a);
+  p.outer.push_back(b);
+  p.outer.push_back(c);
+  p.outer.push_back(d);
+  p.toRadians();
+  b.toRadians();
+  CHECK(p.exterior[1].x==doctest::Approx(b.x));
+  CHECK(p.exterior[1].y==doctest::Approx(b.y));
+  p.toDegrees();
+  CHECK(p.exterior[2].x==doctest::Approx(c.x));
+  CHECK(p.exterior[2].y==doctest::Approx(c.y));
+  p.containsPoint(Point2D(-92,47));
+  p.containsPoint(Point2D(-94,47));
+}*/
