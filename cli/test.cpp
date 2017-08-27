@@ -21,8 +21,8 @@ TEST_CASE("Square Test"){
 
   auto &mp = gc.at(0);
 
-  CHECK(areaOfPolygonsIncludingHoles(mp)==4);
-  CHECK(perimPolygonOuterRings(mp)==8);
+  CHECK(areaIncludingHoles(mp)==4);
+  CHECK(perimExcludingHoles(mp)==8);
   CHECK(hullAreaPolygonOuterRings(mp)==4);
   CHECK(hullAreaOfHoles(mp)==0);
   CHECK(areaHoles(mp)==0);
@@ -43,8 +43,8 @@ TEST_CASE("Circle"){
   //Close the "circle"
   ring.emplace_back(33*std::cos(2*M_PI*0),33*std::sin(2*M_PI*0));
 
-  CHECK(areaOfPolygonsIncludingHoles(mp)==doctest::Approx(M_PI*33*33));
-  CHECK(perimPolygonOuterRings(mp)==doctest::Approx(2*M_PI*33));
+  CHECK(areaIncludingHoles(mp)==doctest::Approx(M_PI*33*33));
+  CHECK(perimExcludingHoles(mp)==doctest::Approx(2*M_PI*33));
   CHECK(areaHoles(mp)==0);
   CHECK(perimHoles(mp)==0);
   CHECK(diameterOfEntireMultiPolygon(mp)==doctest::Approx(2*33));
@@ -106,8 +106,8 @@ TEST_CASE("Polygon with hole"){
   auto gca = ReadGeoJSON(inita);
   auto gcb = ReadGeoJSON(initb);
 
-  CHECK(areaOfPolygonsIncludingHoles(gca[0])==16);
-  CHECK(areaOfPolygonsIncludingHoles(gcb[0])==4);
+  CHECK(areaIncludingHoles(gca[0])==16);
+  CHECK(areaIncludingHoles(gcb[0])==4);
   CHECK(areaHoles(gca[0])==1);
   CHECK(IntersectionArea(gca[0],gcb[0])==3);
 }

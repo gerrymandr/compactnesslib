@@ -11,27 +11,27 @@
 namespace complib {
 
 double ScorePolsbyPopper(const MultiPolygon &mp){
-  const double area  = areaOfPolygonsIncludingHoles(mp);
-  const double perim = perimPolygonOuterRings(mp);
+  const double area  = areaIncludingHoles(mp);
+  const double perim = perimExcludingHoles(mp);
   return 4*M_PI*area/perim/perim;
 }
 
 double ScoreSchwartzberg(const MultiPolygon &mp){
-  const double area   = areaOfPolygonsIncludingHoles(mp);
-  const double perim  = perimPolygonOuterRings(mp);
+  const double area   = areaIncludingHoles(mp);
+  const double perim  = perimExcludingHoles(mp);
   const double radius = std::sqrt(area/M_PI);
   const double circum = 2*M_PI*radius;
   return circum/perim;
 }
 
 double ScoreConvexHull(const MultiPolygon &mp){
-  const double area      = areaOfPolygonsIncludingHoles(mp);
+  const double area      = areaIncludingHoles(mp);
   const double hull_area = hullAreaPolygonOuterRings(mp);
   return area/hull_area;
 }
 
 double ScoreConvexHullPTB(const MultiPolygon &mp, const MultiPolygon &border){
-  const double area      = areaOfPolygonsIncludingHoles(mp);
+  const double area      = areaIncludingHoles(mp);
   const double hull_area = IntersectionArea(mp.getHull(),border);
   return area/hull_area;
 }
@@ -39,7 +39,7 @@ double ScoreConvexHullPTB(const MultiPolygon &mp, const MultiPolygon &border){
 
 //TODO: Use "https://people.inf.ethz.ch/gaertner/subdir/software/miniball.html"
 double ScoreReock(const MultiPolygon &mp){
-  const double area      = areaOfPolygonsIncludingHoles(mp);
+  const double area      = areaIncludingHoles(mp);
   const double radius    = diameterOfEntireMultiPolygon(mp)/2;
   const double circ_area = M_PI*radius*radius;
 
@@ -53,9 +53,9 @@ void CalculateAllScores(GeoCollection &mps){
 
 void CalculateScoreFromString(MultiPolygon &mp, const std::string score){
   if(score=="perim")
-    mp.scores[score] = perimPolygonOuterRings(mp);
+    mp.scores[score] = perimExcludingHoles(mp);
   else if(score=="area")
-    mp.scores[score] = areaOfPolygonsIncludingHoles(mp);
+    mp.scores[score] = areaIncludingHoles(mp);
   else if(score=="PolsbyPopp")
     mp.scores[score] = complib::ScorePolsbyPopper(mp);
   else if(score=="Schwartzbe")

@@ -242,19 +242,19 @@ double areaHoles(const Polygon &p){
   return std::accumulate(p.begin()+1,p.end(),0.0,[](const double b, const Ring &r){ return b+area(r);});
 }
 
-double areaOfPolygonsIncludingHoles(const MultiPolygon &mp){
+double areaIncludingHoles(const MultiPolygon &mp){
   return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaOuter(p);}); 
 }
 
 double areaExcludingHoles(const MultiPolygon &mp){
-  return areaOfPolygonsIncludingHoles(mp)-areaHoles(mp);
+  return areaIncludingHoles(mp)-areaHoles(mp);
 }
 
 double areaHoles(const MultiPolygon &mp){
   return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaHoles(p);}); 
 }
 
-double perimOuter(const Polygon &p){
+double perimExcludingHoles(const Polygon &p){
   return perim(p.at(0));
 }
 
@@ -262,8 +262,16 @@ double perimHoles(const Polygon &p){
   return std::accumulate(p.begin()+1,p.end(),0.0,[](const double b, const Ring &r){ return b+perim(r);});
 }
 
-double perimPolygonOuterRings(const MultiPolygon &mp){
-  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimOuter(p);}); 
+double perimExcludingHoles(const MultiPolygon &mp){
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimExcludingHoles(p);}); 
+}
+
+double perimIncludingHoles(const Polygon &p){
+  return std::accumulate(p.begin(),p.end(),0.0,[](const double b, const Ring &r){ return b+perim(r);});
+}
+
+double perimIncludingHoles(const MultiPolygon &mp){
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimIncludingHoles(p);}); 
 }
 
 double perimHoles(const MultiPolygon &mp){

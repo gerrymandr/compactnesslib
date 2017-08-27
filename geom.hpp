@@ -69,16 +69,18 @@ class GeoCollection : public MultiPolygons {
 
 
 double area(const Ring &r);
-double areaOuter(const Polygon &p);
-double areaOfPolygonsIncludingHoles(const MultiPolygon &mp);
+double areaIncludingHoles(const Polygon &p);
+double areaIncludingHoles(const MultiPolygon &mp);
 double areaExcludingHoles(const MultiPolygon &mp);
 
 double areaHoles(const Polygon &p);
 double areaHoles(const MultiPolygon &mp);
 
 double perim(const Ring &r);
-double perimOuter(const Polygon &p);
-double perimPolygonOuterRings(const MultiPolygon &mp);
+double perimExcludingHoles(const Polygon &p);
+double perimExcludingHoles(const MultiPolygon &mp);
+double perimIncludingHoles(const Polygon &p);
+double perimIncludingHoles(const MultiPolygon &mp);
 
 double perimHoles(const Polygon &p);
 double perimHoles(const MultiPolygon &mp);
