@@ -96,13 +96,13 @@ double diameterOfEntireMultiPolygon(const MultiPolygon &mp);
 
 
 
-const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed=false);
-const cl::Paths& ConvertToClipper(const MultiPolygon &mp);
+const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed);
+const cl::Paths& ConvertToClipper(const MultiPolygon &mp, const bool reversed);
 
 template<class T, class U>
 double IntersectionArea(const T &a, const U &b) {
-  const auto paths_a = ConvertToClipper(a);
-  const auto paths_b = ConvertToClipper(b);
+  const auto paths_a = ConvertToClipper(a,false);
+  const auto paths_b = ConvertToClipper(b,false);
 
   cl::Clipper clpr;
   clpr.AddPaths(paths_a, cl::ptSubject, true);
