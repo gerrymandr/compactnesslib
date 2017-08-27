@@ -4,9 +4,6 @@
 #include <cmath>
 #include <vector>
 #include <stdexcept>
-#include <algorithm>
-#include <functional>
-#include <iostream>
 
 namespace complib {
 
