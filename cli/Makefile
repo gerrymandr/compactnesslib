@@ -1,8 +1,13 @@
-all:
-	g++ -O3 -g -DDOCTEST_CONFIG_DISABLE --std=c++11 -fopenmp -march=native -mtune=native main.cpp Timer.cpp ../*cpp ../shapelib/*cpp -o compactness.exe -Wall -Wpedantic
+SOURCES = $(wildcard ../*.cpp) $(wildcard ../shapelib/*.cpp) main.cpp Timer.cpp
+OBJECTS = $(SOURCES:.cpp=.o)
 
-test:
-	g++ --coverage -O0 -g --std=c++11 ../*cpp ../shapelib/*cpp test.cpp -o compactness_test.exe  -Wall -Wpedantic
+CXX_FLAGS = --std=c++11 -march=native -mtune=native -g -O3 -DDOCTEST_CONFIG_DISABLE
 
-cleantest:
-	rm -rf compactness_test.exe *.gcno *.gcda *.gcov
+all: $(OBJECTS)
+	$(CXX) $(CXX_FLAGS) $(OBJECTS) -o compactness.exe -Wall -Wpedantic
+
+%.o: %.cpp
+	$(CXX) -c $(CXX_FLAGS) $< -o $@ 
+
+clean:
+	rm -rf compactness.exe ../*.o ../shapelib/*.o
