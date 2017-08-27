@@ -117,6 +117,8 @@ const Ring& Ring::getHull() const {
 
   hull.reset(new Ring(L.begin(),L.end()));
 
+  //NOTE: It may be necessary to reverse the ring to give a positive area
+
   return *hull;
 }
 
