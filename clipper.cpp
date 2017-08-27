@@ -1042,14 +1042,14 @@ TEdge* ClipperBase::ProcessBound(TEdge* E, bool NextIsForward)
 }
 //------------------------------------------------------------------------------
 
-bool ClipperBase::AddPath(const Path &pg, PolyType PolyTyp, bool Closed)
+bool ClipperBase::AddPaths(const Path &pg, PolyType PolyTyp, bool Closed)
 {
 #ifdef use_lines
   if (!Closed && PolyTyp == ptClip)
-    throw clipperException("AddPath: Open paths must be subject.");
+    throw clipperException("AddPaths: Open paths must be subject.");
 #else
   if (!Closed)
-    throw clipperException("AddPath: Open paths have been disabled.");
+    throw clipperException("AddPaths: Open paths have been disabled.");
 #endif
 
   int highI = (int)pg.size() -1;
@@ -1225,7 +1225,7 @@ bool ClipperBase::AddPaths(const Paths &ppg, PolyType PolyTyp, bool Closed)
 {
   bool result = false;
   for (Paths::size_type i = 0; i < ppg.size(); ++i)
-    if (AddPath(ppg[i], PolyTyp, Closed)) result = true;
+    if (AddPaths(ppg[i], PolyTyp, Closed)) result = true;
   return result;
 }
 //------------------------------------------------------------------------------
@@ -3806,7 +3806,7 @@ void ClipperOffset::Clear()
 }
 //------------------------------------------------------------------------------
 
-void ClipperOffset::AddPath(const Path& path, JoinType joinType, EndType endType)
+void ClipperOffset::AddPaths(const Path& path, JoinType joinType, EndType endType)
 {
   int highI = (int)path.size() - 1;
   if (highI < 0) return;
@@ -3854,7 +3854,7 @@ void ClipperOffset::AddPath(const Path& path, JoinType joinType, EndType endType
 void ClipperOffset::AddPaths(const Paths& paths, JoinType joinType, EndType endType)
 {
   for (Paths::size_type i = 0; i < paths.size(); ++i)
-    AddPath(paths[i], joinType, endType);
+    AddPaths(paths[i], joinType, endType);
 }
 //------------------------------------------------------------------------------
 
@@ -3906,7 +3906,7 @@ void ClipperOffset::Execute(Paths& solution, double delta)
     outer[2] = IntPoint(r.right + 10, r.top - 10);
     outer[3] = IntPoint(r.left - 10, r.top - 10);
 
-    clpr.AddPath(outer, ptSubject, true);
+    clpr.AddPaths(outer, ptSubject, true);
     clpr.ReverseSolution(true);
     clpr.Execute(ctUnion, solution, pftNegative, pftNegative);
     if (solution.size() > 0) solution.erase(solution.begin());
@@ -3936,7 +3936,7 @@ void ClipperOffset::Execute(PolyTree& solution, double delta)
     outer[2] = IntPoint(r.right + 10, r.top - 10);
     outer[3] = IntPoint(r.left - 10, r.top - 10);
 
-    clpr.AddPath(outer, ptSubject, true);
+    clpr.AddPaths(outer, ptSubject, true);
     clpr.ReverseSolution(true);
     clpr.Execute(ctUnion, solution, pftNegative, pftNegative);
     //remove the outer PolyNode rectangle ...
@@ -4297,7 +4297,7 @@ void SimplifyPolygon(const Path &in_poly, Paths &out_polys, PolyFillType fillTyp
 {
   Clipper c;
   c.StrictlySimple(true);
-  c.AddPath(in_poly, ptSubject, true);
+  c.AddPaths(in_poly, ptSubject, true);
   c.Execute(ctUnion, out_polys, fillType, fillType);
 }
 //------------------------------------------------------------------------------
@@ -4541,7 +4541,7 @@ void MinkowskiSum(const Path& pattern, const Paths& paths, Paths& solution, bool
     {
       Path tmp2;
       TranslatePath(paths[i], tmp2, pattern[0]);
-      c.AddPath(tmp2, ptClip, true);
+      c.AddPaths(tmp2, ptClip, true);
     }
   }
     c.Execute(ctUnion, solution, pftNonZero, pftNonZero);
