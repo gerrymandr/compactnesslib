@@ -14,8 +14,6 @@
 static const double DEG_TO_RAD = M_PI/180.0;
 static const double RAD_TO_DEG = 180.0/M_PI;
 
-namespace cl = ClipperLib;
-
 namespace complib {
 
 
@@ -72,9 +70,9 @@ Ring::Ring(std::vector<Point2D>::iterator first, std::vector<Point2D>::iterator 
 
 //Andrew's monotone chain convex hull algorithm
 //https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain
-void Ring::getHull() const {
+const Ring& Ring::getHull() const {
   if(hull!=nullptr)
-    return;
+    *hull;
 
   if (size() < 3)
     throw std::runtime_error("There must be at least 3 points for a convex hull!");
@@ -118,6 +116,8 @@ void Ring::getHull() const {
   L.insert(L.end(),U.begin(),U.end());
 
   hull.reset(new Ring(L.begin(),L.end()));
+
+  return *hull;
 }
 
 
@@ -143,7 +143,22 @@ void MultiPolygon::toDegrees(){
   }
 }
 
+const Ring& MultiPolygon::getHull() const {
+  if(!hull.empty())
+    return hull;
 
+  //Put all of the points into a ring 
+  Ring temp;
+  for(const auto &p: *this)
+  for(const auto &r: p)
+    temp.insert(temp.end(),r.begin(),r.end());
+  temp.getHull();
+
+  //Move temporary's hull into mp's hull
+  std::swap(hull,*temp.hull);
+
+  return hull;
+}
 
 
 
@@ -231,14 +246,13 @@ double hullAreaOfHoles(const MultiPolygon &mp){
 }
 
 double diameter(const Ring &r){
-  r.getHull();
+  const auto &hull = r.getHull();
 
-  auto &hull = *r.hull;
-
+  //TODO: There's a faster way to do this
   double maxdist = 0;
   for(unsigned int i=0;i<hull.size();i++)
   for(unsigned int j=i+1;j<hull.size();j++)
-    maxdist = std::max(maxdist,EuclideanDistance(hull[i],hull[j]));
+    maxdist = std::max(maxdist,EuclideanDistance(hull.at(i),hull.at(j)));
   return maxdist;
 }
 
@@ -247,64 +261,48 @@ double diameterOuter(const Polygon &p){
 }
 
 double diameterOfEntireMultiPolygon(const MultiPolygon &mp){
-  //Put all of the points into a ring 
-  Ring temp;
-  for(const auto &p: mp)
-  for(const auto &r: p)
-    temp.insert(temp.end(),r.begin(),r.end());
-  temp.getHull();
-  return diameter(temp);
+  return diameter(mp.getHull());
 }
 
 
 
+const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed){
+  if(!ring.clipper_paths.empty())
+    return ring.clipper_paths;
+
+  cl::Path path;
+  if(!reversed){
+    for(const auto &pt: ring)
+      path.emplace_back((long long)pt.x,(long long)pt.y);
+  } else {
+    for(auto pt=ring.rbegin();pt!=ring.rend();pt++)
+      path.emplace_back((long long)pt->x,(long long)pt->y);    
+  }
+
+  std::swap(ring.clipper_paths,path);
+
+  return ring.clipper_paths;
+}
 
 
+const cl::Paths& ConvertToClipper(const MultiPolygon &mp) {
+  if(!mp.clipper_paths.empty())
+    return mp.clipper_paths;
 
-cl::Paths ConvertToClipper(const MultiPolygon &mp) {
   cl::Paths paths;
 
   for(const auto &poly: mp){
     //Send in outer perimter
-    paths.emplace_back();
-    for(const auto &pt: poly.at(0))
-      paths.back().emplace_back((long long)pt.x,(long long)pt.y);
+    paths.push_back(ConvertToClipper(poly.at(0), false));
 
     //Send in the holes
-    for(unsigned int i=1;i<poly.size();i++){
-      paths.emplace_back();
-      for(auto pt=poly.at(i).rbegin();pt!=poly.at(i).rend();pt++)
-        paths.back().emplace_back((long long)pt->x,(long long)pt->y);
-    }
+    for(unsigned int i=1;i<poly.size();i++)
+      paths.push_back(ConvertToClipper(poly.at(i), true));
   }
 
-  return paths;
-}
+  std::swap(mp.clipper_paths, paths);
 
-
-
-double IntersectionArea(const MultiPolygon &a, const MultiPolygon &b) {
-  if(a.clipper_paths.empty())
-    a.clipper_paths = ConvertToClipper(a);
-  if(b.clipper_paths.empty())
-    b.clipper_paths = ConvertToClipper(b);
-
-  cl::Clipper clpr;
-  clpr.AddPaths(a.clipper_paths, cl::ptSubject, true);
-  clpr.AddPaths(b.clipper_paths, cl::ptClip, true);
-  cl::Paths solution;
-  clpr.Execute(cl::ctIntersection, solution, cl::pftEvenOdd, cl::pftEvenOdd);
-
-  double area = 0;
-  for(const auto &path: solution)
-    area += cl::Area(path);
-  return area;
-}
-
-
-
-
-
+  return mp.clipper_paths;
 }
 
 

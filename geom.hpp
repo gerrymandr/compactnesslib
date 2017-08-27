@@ -10,6 +10,8 @@
 
 namespace complib {
 
+namespace cl = ClipperLib;
+
 class Point2D;
 class Polygon;
 class Ring;
@@ -36,7 +38,8 @@ class Ring : public Points {
   Ring() = default;
   Ring(std::vector<Point2D>::iterator first, std::vector<Point2D>::iterator last);
   mutable std::unique_ptr<Ring> hull;
-  void getHull() const;
+  const Ring& getHull() const;
+  mutable ClipperLib::Path clipper_paths;
 };
 
 class Polygon : public Rings {
@@ -47,6 +50,8 @@ class MultiPolygon : public Polygons {
  public:
   Props props;
   Scores scores;
+  mutable Ring hull;
+  const Ring& getHull() const;
   void toRadians();
   void toDegrees();
   MultiPolygon intersect(const MultiPolygon &b) const;
@@ -85,7 +90,28 @@ double diameter(const Ring &r);
 double diameterOuter(const Polygon &p);
 double diameterOfEntireMultiPolygon(const MultiPolygon &mp);
 
-double IntersectionArea(const MultiPolygon &a, const MultiPolygon &b);
+
+
+const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed=false);
+const cl::Paths& ConvertToClipper(const MultiPolygon &mp);
+
+template<class T, class U>
+double IntersectionArea(const T &a, const U &b) {
+  const auto paths_a = ConvertToClipper(a);
+  const auto paths_b = ConvertToClipper(b);
+
+  cl::Clipper clpr;
+  clpr.AddPaths(paths_a, cl::ptSubject, true);
+  clpr.AddPaths(paths_b, cl::ptClip, true);
+  cl::Paths solution;
+  clpr.Execute(cl::ctIntersection, solution, cl::pftEvenOdd, cl::pftEvenOdd);
+
+  double area = 0;
+  for(const auto &path: solution)
+    area += cl::Area(path);
+  return area;
+}
+
 
 }
 
