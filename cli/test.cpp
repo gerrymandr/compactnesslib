@@ -52,7 +52,7 @@ TEST_CASE("Name lenth"){
     CHECK(sn.size()<=10);
 }
 
-TEST_CASE("Intersection areas"){
+TEST_CASE("Intersection area: big square and little square"){
   const std::string inita = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[4,0],[4,4],[0,4],[0,0]]]}}]}";
   const std::string initb = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[1,1],[3,1],[3,3],[1,3],[1,1]]]}}]}";
 
@@ -64,13 +64,13 @@ TEST_CASE("Intersection areas"){
   }
 
   SUBCASE("Area backward"){
-    std::reverse(gca.back().back().begin(),gca.back().back().end());
-    std::reverse(gcb.back().back().begin(),gcb.back().back().end());
+    gca.reverse();
+    gcb.reverse();
     CHECK(IntersectionArea(gca[0],gcb[0])==4);
   }
 }
 
-TEST_CASE("Intersection areas"){
+TEST_CASE("Intersection areas big square with hole and little square"){
   const std::string inita = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,2],[2,0],[2,2],[0,2],[0,0]]]}}]}";
   const std::string initb = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[1,1],[3,1],[3,3],[1,3],[1,1]]]}}]}";
 
@@ -81,11 +81,27 @@ TEST_CASE("Intersection areas"){
     CHECK(IntersectionArea(gca[0],gcb[0])==1);
   }
 
+  //This should give the same answer as the foregoing since the underlying
+  //clipper library will orientate things correctly for itself
   SUBCASE("Area backward"){
-    std::reverse(gca.back().back().begin(),gca.back().back().end());
-    std::reverse(gcb.back().back().begin(),gcb.back().back().end());
-    CHECK(IntersectionArea(gca[0],gcb[0])==4);
+    gca.reverse();
+    gcb.reverse();
+    CHECK(IntersectionArea(gca[0],gcb[0])==1);
   }
+}
+
+
+TEST_CASE("Polygon with hole"){
+  const std::string inita = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[4,0],[4,4],[0,4],[0,0]],[[1,1],[2,1],[2,2],[1,2],[1,1]]]}}]}";
+  const std::string initb = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[1,1],[3,1],[3,3],[1,3],[1,1]]]}}]}";
+
+  auto gca = ReadGeoJSON(inita);
+  auto gcb = ReadGeoJSON(initb);
+
+  CHECK(areaOfPolygonsIncludingHoles(gca[0])==16);
+  CHECK(areaOfPolygonsIncludingHoles(gcb[0])==4);
+  CHECK(areaHoles(gca[0])==1);
+  CHECK(IntersectionArea(gca[0],gcb[0])==3);
 }
 
 
