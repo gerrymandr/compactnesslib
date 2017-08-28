@@ -22,7 +22,7 @@ std::map<std::string, GeoCollection> prepped_geojson;
 Ring ParseRing(const json &r){
   Ring temp;
   for(const auto &c: r)
-    temp.emplace_back(c[0],c[1]);
+    temp.v.emplace_back(c[0],c[1]);
   return temp;
 }
 
@@ -36,7 +36,7 @@ Polygon ParsePolygon(const json &coor){
   Polygon mp;
   //First ring is the outer ring, all the others are holes
   for(const auto &r: coor)
-    mp.push_back(ParseRing(r));
+    mp.v.push_back(ParseRing(r));
 
   return mp;
 }
@@ -53,14 +53,14 @@ const json& GetToCoordinates(const json &d){
 
 MultiPolygon ParseTopPolygon(const json &d){
   MultiPolygon mps;
-  mps.push_back(ParsePolygon(GetToCoordinates(d)));
+  mps.v.push_back(ParsePolygon(GetToCoordinates(d)));
   return mps;
 }
 
 MultiPolygon ParseMultiPolygon(const json &d){
   MultiPolygon mps;
   for(const auto &poly: GetToCoordinates(d))
-    mps.emplace_back(ParsePolygon(poly));
+    mps.v.emplace_back(ParsePolygon(poly));
 
   return mps;
 }
@@ -104,12 +104,12 @@ GeoCollection ReadGeoJSON(const std::string geojson){
     throw std::runtime_error("Type not a string!");
 
   if(d["type"]=="MultiPolygon"){
-    mps.push_back(ParseMultiPolygon(d));
+    mps.v.push_back(ParseMultiPolygon(d));
   } else if(d["type"]=="Polygon"){
-    mps.push_back(ParseTopPolygon(d));
+    mps.v.push_back(ParseTopPolygon(d));
   } else if(d["type"]=="FeatureCollection"){
     for(const auto &f: d["features"])
-      mps.push_back(ParseFeature(f));
+      mps.v.push_back(ParseFeature(f));
   } else {
     throw std::runtime_error("Not a FeatureCollection or MultiPolygon or Polygon!");
   }
@@ -133,23 +133,23 @@ std::string OutScoreJSON(const GeoCollection &gc, const std::string id){
   const bool use_id = !id.empty();
 
   oss<<"{\n";
-  for(unsigned int i=0;i<gc.size();i++){
+  for(unsigned int i=0;i<gc.v.size();i++){
     oss<<"\t\"";
     if(use_id)
-      oss<<gc[i].props.at(id);
+      oss<<gc.v[i].props.at(id);
     else
       oss<<i;
     oss<<"\":{\n";
 
     unsigned int inserted = 0;
-    for(const auto &kv: gc[i].scores){
+    for(const auto &kv: gc.v[i].scores){
       oss<<"\t\t\""<<kv.first<<"\":"<<std::fixed<<std::setprecision(5)<<kv.second;
-      if(inserted++<gc[i].scores.size()-1)
+      if(inserted++<gc.v[i].scores.size()-1)
         oss<<",\n";
     }
 
     oss<<"\n\t}";
-    if(i<gc.size()-1)
+    if(i<gc.v.size()-1)
       oss<<",\n";
   }
   oss<<"\n}";

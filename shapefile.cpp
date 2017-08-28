@@ -105,7 +105,7 @@ static void ReadShapeAttributes(GeoCollection &gc, std::string filename){
 
       //GRAB ATTRIBUTES WITHOUT DECODING THEM INTO USABLE DATA
       const auto attrib = DBFReadStringAttribute( hDBF, iRecord, i );
-      gc.at(iRecord).props[szTitle] = attrib;
+      gc.v.at(iRecord).props[szTitle] = attrib;
     }
   }
 
@@ -135,8 +135,8 @@ void ReadShapes(GeoCollection &mgons, std::string filename){
 
   SHPObject *psShape;
   for(int i=0;i<nEntities;i++){
-    mgons.emplace_back();     //Add a new MultiPolygon 
-    auto &mp = mgons.back();  //Get a reference to it
+    mgons.v.emplace_back();     //Add a new MultiPolygon 
+    auto &mp = mgons.v.back();  //Get a reference to it
 
     psShape = SHPReadObject( hSHP, i );
     if(psShape==NULL)
@@ -150,13 +150,13 @@ void ReadShapes(GeoCollection &mgons, std::string filename){
     for(int j=0; j < psShape->nVertices; j++ ){
       if( ringi < psShape->nParts && psShape->panPartStart[ringi] == j ){
         if(!IsHole(psShape,ringi))
-          mp.emplace_back();
-        mp.back().emplace_back();
+          mp.v.emplace_back();
+        mp.v.back().v.emplace_back();
         ringi++;
       }
       
       //if(psShape->bMeasureIsUsed){
-      mp.back().back().emplace_back(psShape->padfX[j], psShape->padfY[j]);
+      mp.v.back().v.back().v.emplace_back(psShape->padfX[j], psShape->padfY[j]);
     }
 
     SHPDestroyObject( psShape );
@@ -183,7 +183,7 @@ GeoCollection ReadShapefile(std::string filename){
   ReadShapeAttributes(mgons,filename);
   ReadShapeProj(mgons,filename);
 
-  mgons.correctWindingDirection();
+  //mgons.correctWindingDirection();
 
   return mgons;
 }
@@ -199,20 +199,20 @@ static void WriteShapes(const GeoCollection &gc, const std::string filename){
     throw std::runtime_error("Failed to create shapefile '" + filename + "'!");
 
 
-  for(unsigned int id=0;id<gc.size();id++){
+  for(unsigned int id=0;id<gc.v.size();id++){
     std::vector<double> x;
     std::vector<double> y;
     std::vector<int> rings;
 
-    for(const auto &poly: gc.at(id)){
+    for(const auto &poly: gc.v.at(id).v){
       rings.push_back(x.size());
-      for(const auto &p: poly.at(0)){
+      for(const auto &p: poly.v.at(0).v){
         x.push_back(p.x);
         y.push_back(p.y);
       }
-      for(unsigned int r=1;r<poly.size();r++){
+      for(unsigned int r=1;r<poly.v.size();r++){
         rings.push_back(x.size());
-        for(auto p=poly.at(r).rbegin();p!=poly.at(r).rend();p++){
+        for(auto p=poly.v.at(r).v.rbegin();p!=poly.v.at(r).v.rend();p++){
           x.push_back(p->x);
           y.push_back(p->y);
         }
@@ -274,7 +274,7 @@ void WriteShapeAttributes(const GeoCollection &gc, const std::string filename){
 
   std::map<std::string, PropType> proptypes;
 
-  for(const auto &poly: gc)
+  for(const auto &poly: gc.v)
   for(const auto &prop: poly.props){
     if(!proptypes.count(prop.first)){
       auto &ptv = proptypes[prop.first];
@@ -282,8 +282,13 @@ void WriteShapeAttributes(const GeoCollection &gc, const std::string filename){
       ptv.width = (int)prop.second.size();
     } else {
       auto &ptv = proptypes[prop.first];
-      if(ptv.type!=getType(prop.second))
-        throw std::runtime_error("Property types for shapefile output don't match!");
+      const auto this_type=getType(prop.second);
+      if(ptv.type!=this_type){
+        if((ptv.type==FTString || this_type==FTString))
+          ptv.type = FTString;
+        else
+          throw std::runtime_error("Property types for shapefile output don't match! Expected '"+std::to_string(ptv.type)+"' got '" + std::to_string(this_type) +"'!");
+      } 
       ptv.width = std::max(ptv.width,(int)prop.second.size());
     }
   }
@@ -294,8 +299,8 @@ void WriteShapeAttributes(const GeoCollection &gc, const std::string filename){
       throw std::runtime_error("Failed to add field '"+p.first+"' to shapefile dbf!");
   }
 
-  for(unsigned int id=0;id<gc.size();id++){
-    for(const auto &prop: gc.at(id).props){
+  for(unsigned int id=0;id<gc.v.size();id++){
+    for(const auto &prop: gc.v.at(id).props){
       const auto &atv = proptypes[prop.first];
       switch(atv.type){
         case FTDouble:  DBFWriteDoubleAttribute (hDBF, id, atv.field_id, std::stod(prop.second)); break;
@@ -316,7 +321,7 @@ void WriteShapeScores(const GeoCollection &gc, const std::string filename){
     throw std::runtime_error("Failed to create shapefile database '" + filename + "'!");
 
   std::set<std::string> scoreset; //Gather all scores
-  for(const auto &poly: gc)
+  for(const auto &poly: gc.v)
   for(const auto &score: poly.scores)
     scoreset.insert(score.first);
 
@@ -329,11 +334,11 @@ void WriteShapeScores(const GeoCollection &gc, const std::string filename){
     scorefields.emplace_back(s, ret);
   }
 
-  for(unsigned int id=0;id<gc.size();id++){
+  for(unsigned int id=0;id<gc.v.size();id++){
     for(unsigned int s=0;s<scorefields.size();s++){
       const auto &sf = scorefields.at(s);
-      if(gc.at(id).scores.count(sf.first))
-        DBFWriteDoubleAttribute(hDBF, id, sf.second, gc.at(id).scores.at(sf.first));
+      if(gc.v.at(id).scores.count(sf.first))
+        DBFWriteDoubleAttribute(hDBF, id, sf.second, gc.v.at(id).scores.at(sf.first));
       else
         DBFWriteNULLAttribute(hDBF, id, sf.second);
     }

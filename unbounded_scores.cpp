@@ -46,10 +46,10 @@ void CalculateListOfUnboundedScores(GeoCollection &gc, std::vector<std::string> 
   else if(score_list.size()==1 && score_list.at(0)=="all")
     score_list = getListOfUnboundedScores();
 
-  for(unsigned int i=0;i<gc.size();i++){
+  for(unsigned int i=0;i<gc.v.size();i++){
     for(const auto &sn: score_list){
       if(unbounded_score_map.count(sn))
-        gc[i].scores[sn] = unbounded_score_map.at(sn)(gc[i]);
+        gc.v[i].scores[sn] = unbounded_score_map.at(sn)(gc.v[i]);
     }
   }
 }

@@ -32,8 +32,9 @@ class Point2D {
   Point2D(double x0, double y0);
 };
 
-class Ring : public Points {
+class Ring {
  public:
+  Points v;
   Ring() = default;
   Ring(const std::vector<Point2D> &ptvec);
   mutable std::vector<Point2D> hull;
@@ -41,12 +42,14 @@ class Ring : public Points {
   mutable ClipperLib::Path clipper_paths;
 };
 
-class Polygon : public Rings {
-
+class Polygon {
+ public:
+  Rings v;
 };
 
-class MultiPolygon : public Polygons {
+class MultiPolygon {
  public:
+  Polygons v;
   Props props;
   Scores scores;
   mutable Ring hull;
@@ -58,8 +61,9 @@ class MultiPolygon : public Polygons {
   void reverse();
 };
 
-class GeoCollection : public MultiPolygons {
+class GeoCollection {
  public:
+  MultiPolygons v;
   std::string prj_str;
   void reverse();
   void correctWindingDirection();
