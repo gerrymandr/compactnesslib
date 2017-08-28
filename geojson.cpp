@@ -1,5 +1,4 @@
 #include "json.hpp"
-#include "compactengine.hpp"
 #include "geojson.hpp"
 #include <iostream>
 #include <iomanip>
