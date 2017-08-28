@@ -48,9 +48,8 @@ void CalculateListOfUnboundedScores(GeoCollection &gc, std::vector<std::string> 
 
   for(unsigned int i=0;i<gc.size();i++){
     for(const auto &sn: score_list){
-      if(!unbounded_score_map.count(sn))
-        throw std::runtime_error("Unrecognized score name '" + sn + "'!");
-      gc[i].scores[sn] = unbounded_score_map.at(sn)(gc[i]);
+      if(unbounded_score_map.count(sn))
+        gc[i].scores[sn] = unbounded_score_map.at(sn)(gc[i]);
     }
   }
 }
