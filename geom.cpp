@@ -17,7 +17,7 @@ static const double RAD_TO_DEG = 180.0/M_PI;
 namespace complib {
 
 
-inline double EuclideanDistance(const Point2D &a, const Point2D &b){
+double EuclideanDistance(const Point2D &a, const Point2D &b){
   const double xd = (a.x-b.x);
   const double yd = (a.y-b.y);
   return std::sqrt(xd*xd+yd*yd);
