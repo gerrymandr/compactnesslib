@@ -7,10 +7,13 @@
 #include <stdexcept>
 #include <sstream>
 #include <string>
+#include <map>
 
 using json = nlohmann::json;
 
 namespace complib {
+
+std::map<std::string, GeoCollection> prepped_geojson;
 
 //Use to deduce types
 //template<typename T> struct TD;
@@ -86,6 +89,9 @@ MultiPolygon ParseFeature(const json &d){
 }
 
 GeoCollection ReadGeoJSON(const std::string geojson){
+  if(geojson.compare(0,2,"__")==0)
+    return prepped_geojson.at(geojson);
+
   GeoCollection mps;
   auto d = json::parse(geojson);
 
@@ -149,6 +155,12 @@ std::string OutScoreJSON(const GeoCollection &gc, const std::string id){
   oss<<"\n}";
 
   return oss.str();
+}
+
+std::string PrepGeoJSON(std::string geojson){
+  const std::string key = "__" + std::to_string(prepped_geojson.size());
+  prepped_geojson[key] = ReadGeoJSON(geojson);
+  return key;
 }
 
 }
