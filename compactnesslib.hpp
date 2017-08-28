@@ -2,6 +2,7 @@
 #define _compactnesslib_hpp_
 
 #include "unbounded_scores.hpp"
+#include "bounded_scores.hpp"
 #include "geojson.hpp"
 #include "geom.hpp"
 #include "Reprojector.hpp"
