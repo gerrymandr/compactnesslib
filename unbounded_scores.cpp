@@ -1,12 +1,9 @@
 #include "doctest.h"
-#include "compactengine.hpp"
+#include "unbounded_scores.hpp"
 #include "geom.hpp"
 #include <cmath>
 #include <vector>
 #include <stdexcept>
-#include <algorithm>
-#include <functional>
-#include <iostream>
 
 namespace complib {
 
@@ -30,13 +27,6 @@ double ScoreConvexHull(const MultiPolygon &mp){
   return area/hull_area;
 }
 
-double ScoreConvexHullPTB(const MultiPolygon &mp, const MultiPolygon &border){
-  const double area      = areaIncludingHoles(mp);
-  const double hull_area = IntersectionArea(mp.getHull(),border);
-  return area/hull_area;
-}
-
-
 //TODO: Use "https://people.inf.ethz.ch/gaertner/subdir/software/miniball.html"
 double ScoreReock(const MultiPolygon &mp){
   const double area      = areaIncludingHoles(mp);
@@ -58,25 +48,26 @@ void CalculateListOfUnboundedScores(GeoCollection &gc, std::vector<std::string> 
 
   for(unsigned int i=0;i<gc.size();i++){
     for(const auto &sn: score_list){
-      if(!unbounded_score_map.count(sn))
-        throw std::runtime_error("Unrecognized score name '" + sn + "'!");
-      gc[i].scores[sn] = unbounded_score_map.at(sn)(gc[i]);
+      if(unbounded_score_map.count(sn))
+        gc[i].scores[sn] = unbounded_score_map.at(sn)(gc[i]);
     }
   }
 }
 
 const std::vector<std::string>& getListOfUnboundedScores(){
   static std::vector<std::string> score_names;
+  if(!score_names.empty())
+    return score_names;
   for(const auto &kv: unbounded_score_map)
     score_names.push_back(kv.first);
   return score_names;
 }
 
-const score_map_t unbounded_score_map({
-  // {"areaAH",            areaIncludingHoles},
-  // {"perimSH",           perimExcludingHoles},
-  // {"ScorePolsbyPopper", ScorePolsbyPopper},
-  // {"ScoreSchwartzberg", ScoreSchwartzberg},
+const unbounded_score_map_t unbounded_score_map({
+  {"areaAH",            [](const MultiPolygon &mp) { return areaIncludingHoles(mp);  }},
+  {"perimSH",           [](const MultiPolygon &mp) { return perimExcludingHoles(mp); }},
+  {"ScorePolsbyPopper", ScorePolsbyPopper},
+  {"ScoreSchwartzberg", ScoreSchwartzberg},
   {"ScoreConvexHull",   ScoreConvexHull},
   {"ScoreReock",        ScoreReock}
 });

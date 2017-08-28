@@ -4,7 +4,6 @@
 #include <vector>
 #include <cmath>
 #include <string>
-#include <memory>
 #include "Props.hpp"
 #include "clipper.hpp"
 
@@ -36,9 +35,9 @@ class Point2D {
 class Ring : public Points {
  public:
   Ring() = default;
-  Ring(std::vector<Point2D>::iterator first, std::vector<Point2D>::iterator last);
-  mutable std::unique_ptr<Ring> hull;
-  const Ring& getHull() const;
+  Ring(const std::vector<Point2D> &ptvec);
+  mutable std::vector<Point2D> hull;
+  Ring getHull() const;
   mutable ClipperLib::Path clipper_paths;
 };
 
