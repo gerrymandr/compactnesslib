@@ -63,9 +63,9 @@ const std::vector<std::string>& getListOfUnboundedScores(){
   return score_names;
 }
 
-const score_map_t unbounded_score_map({
-  {"areaAH",            areaIncludingHoles},
-  {"perimSH",           perimExcludingHoles},
+const unbounded_score_map_t unbounded_score_map({
+  {"areaAH",            [](const MultiPolygon &mp) { return areaIncludingHoles(mp);  }},
+  {"perimSH",           [](const MultiPolygon &mp) { return perimExcludingHoles(mp); }},
   {"ScorePolsbyPopper", ScorePolsbyPopper},
   {"ScoreSchwartzberg", ScoreSchwartzberg},
   {"ScoreConvexHull",   ScoreConvexHull},
