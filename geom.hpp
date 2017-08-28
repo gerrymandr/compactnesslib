@@ -6,6 +6,7 @@
 #include <string>
 #include "Props.hpp"
 #include "clipper.hpp"
+#include "iterator_tpl.h"
 
 namespace complib {
 
@@ -40,11 +41,21 @@ class Ring {
   mutable std::vector<Point2D> hull;
   Ring getHull() const;
   mutable ClipperLib::Path clipper_paths;
+  EXPOSE_STL_ITERATORS(v);
+  EXPOSE_STL_ACCESORS(v);
+  EXPOSE_FRONT_BACK(v);
+  EXPOSE_STL_MODIFIERS(v);
+  EXPOSE_STL_SIZE(v);
 };
 
 class Polygon {
  public:
   Rings v;
+  EXPOSE_STL_ITERATORS(v);
+  EXPOSE_STL_ACCESORS(v);
+  EXPOSE_FRONT_BACK(v);
+  EXPOSE_STL_MODIFIERS(v);
+  EXPOSE_STL_SIZE(v);
 };
 
 class MultiPolygon {
@@ -59,6 +70,11 @@ class MultiPolygon {
   MultiPolygon intersect(const MultiPolygon &b) const;
   mutable ClipperLib::Paths clipper_paths;
   void reverse();
+  EXPOSE_STL_ITERATORS(v);
+  EXPOSE_STL_ACCESORS(v);
+  EXPOSE_FRONT_BACK(v);
+  EXPOSE_STL_MODIFIERS(v);
+  EXPOSE_STL_SIZE(v);
 };
 
 class GeoCollection {
@@ -67,6 +83,11 @@ class GeoCollection {
   std::string prj_str;
   void reverse();
   void correctWindingDirection();
+  EXPOSE_STL_ITERATORS(v);
+  EXPOSE_STL_ACCESORS(v);
+  EXPOSE_FRONT_BACK(v);
+  EXPOSE_STL_MODIFIERS(v);
+  EXPOSE_STL_SIZE(v);
 };
 
 inline double EuclideanDistance(const Point2D &a, const Point2D &b);
