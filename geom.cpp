@@ -234,7 +234,7 @@ double hullArea(const Ring &r){
   return area(*r.hull);
 }
 
-double areaOuter(const Polygon &p){
+double areaIncludingHoles(const Polygon &p){
   return area(p.at(0));
 }
 
@@ -243,7 +243,7 @@ double areaHoles(const Polygon &p){
 }
 
 double areaIncludingHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaOuter(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaIncludingHoles(p);}); 
 }
 
 double areaExcludingHoles(const MultiPolygon &mp){
