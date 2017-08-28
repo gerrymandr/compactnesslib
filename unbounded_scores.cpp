@@ -64,12 +64,12 @@ const std::vector<std::string>& getListOfUnboundedScores(){
 }
 
 const unbounded_score_map_t unbounded_score_map({
-  {"areaAH",            [](const MultiPolygon &mp) { return areaIncludingHoles(mp);  }},
-  {"perimSH",           [](const MultiPolygon &mp) { return perimExcludingHoles(mp); }},
-  {"ScorePolsbyPopper", ScorePolsbyPopper},
-  {"ScoreSchwartzberg", ScoreSchwartzberg},
-  {"ScoreConvexHull",   ScoreConvexHull},
-  {"ScoreReock",        ScoreReock}
+  {"areaAH",     [](const MultiPolygon &mp) { return areaIncludingHoles(mp);  }},
+  {"perimSH",    [](const MultiPolygon &mp) { return perimExcludingHoles(mp); }},
+  {"PolsbyPopp", ScorePolsbyPopper},
+  {"Schwartzbe", ScoreSchwartzberg},
+  {"CvxHullPS",  ScoreConvexHull},
+  {"Reock",      ScoreReock}
 });
 
 }
