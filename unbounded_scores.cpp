@@ -1,5 +1,5 @@
 #include "doctest.h"
-#include "compactengine.hpp"
+#include "unbounded_scores.hpp"
 #include "geom.hpp"
 #include <cmath>
 #include <vector>
@@ -26,13 +26,6 @@ double ScoreConvexHull(const MultiPolygon &mp){
   const double hull_area = hullAreaPolygonOuterRings(mp);
   return area/hull_area;
 }
-
-double ScoreConvexHullPTB(const MultiPolygon &mp, const MultiPolygon &border){
-  const double area      = areaIncludingHoles(mp);
-  const double hull_area = IntersectionArea(mp.getHull(),border);
-  return area/hull_area;
-}
-
 
 //TODO: Use "https://people.inf.ethz.ch/gaertner/subdir/software/miniball.html"
 double ScoreReock(const MultiPolygon &mp){
@@ -64,16 +57,18 @@ void CalculateListOfUnboundedScores(GeoCollection &gc, std::vector<std::string> 
 
 const std::vector<std::string>& getListOfUnboundedScores(){
   static std::vector<std::string> score_names;
+  if(!score_names.empty())
+    return score_names;
   for(const auto &kv: unbounded_score_map)
     score_names.push_back(kv.first);
   return score_names;
 }
 
 const score_map_t unbounded_score_map({
-  // {"areaAH",            areaIncludingHoles},
-  // {"perimSH",           perimExcludingHoles},
-  // {"ScorePolsbyPopper", ScorePolsbyPopper},
-  // {"ScoreSchwartzberg", ScoreSchwartzberg},
+  {"areaAH",            areaIncludingHoles},
+  {"perimSH",           perimExcludingHoles},
+  {"ScorePolsbyPopper", ScorePolsbyPopper},
+  {"ScoreSchwartzberg", ScoreSchwartzberg},
   {"ScoreConvexHull",   ScoreConvexHull},
   {"ScoreReock",        ScoreReock}
 });
