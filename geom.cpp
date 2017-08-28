@@ -64,15 +64,14 @@ Point2D::Point2D(double x0, double y0) {
 //   return c;
 // }
 
-Ring::Ring(std::vector<Point2D>::iterator first, std::vector<Point2D>::iterator last) :
-  std::vector<Point2D>(first,last) {}
+Ring::Ring(const std::vector<Point2D> &ptvec) : std::vector<Point2D>(ptvec) {}
 
 
 //Andrew's monotone chain convex hull algorithm
 //https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain
-const Ring& Ring::getHull() const {
-  if(hull!=nullptr)
-    *hull;
+Ring Ring::getHull() const {
+  if(!hull.empty())
+    return hull;
 
   if (size() < 3)
     throw std::runtime_error("There must be at least 3 points for a convex hull!");
@@ -115,11 +114,11 @@ const Ring& Ring::getHull() const {
 
   L.insert(L.end(),U.begin(),U.end());
 
-  hull.reset(new Ring(L.begin(),L.end()));
+  hull = L;
 
   //NOTE: It may be necessary to reverse the ring to give a positive area
 
-  return *hull;
+  return hull;
 }
 
 
@@ -157,7 +156,7 @@ const Ring& MultiPolygon::getHull() const {
   temp.getHull();
 
   //Move temporary's hull into mp's hull
-  std::swap(hull,*temp.hull);
+  std::swap(hull,temp.hull);
 
   return hull;
 }
@@ -231,7 +230,7 @@ double perim(const Ring &r){
 
 double hullArea(const Ring &r){
   r.getHull();
-  return area(*r.hull);
+  return area(r.hull);
 }
 
 double areaOuter(const Polygon &p){
