@@ -2,6 +2,7 @@
 #include "../compactnesslib.hpp"
 #include "../doctest.h"
 #include <cmath>
+#include <map>
 #include <algorithm>
 
 using namespace complib;
@@ -68,11 +69,25 @@ TEST_CASE("Name lenth"){
   //Score names can't exceed 10 characters due to shapefile limitations
   for(auto &sn: getListOfUnboundedScores())
     CHECK(sn.size()<=10);
+  for(auto &sn: getListOfBoundedScores())
+    CHECK(sn.size()<=10);
 }
 
 TEST_CASE("Name Matching"){
   for(auto &sn: getListOfUnboundedScores())
     CHECK(unbounded_score_map.count(sn));
+  for(auto &sn: getListOfBoundedScores())
+    CHECK(bounded_score_map.count(sn));
+}
+
+TEST_CASE("Name uniqueness"){
+  std::map<std::string, int> score_names;
+  for(auto &sn: getListOfUnboundedScores())
+    score_names[sn]++;
+  for(auto &sn: getListOfBoundedScores())
+    score_names[sn]++;
+  for(const auto &kv: score_names)
+    CHECK(kv.second==1);
 }
 
 TEST_CASE("Intersection area: big square and little square"){

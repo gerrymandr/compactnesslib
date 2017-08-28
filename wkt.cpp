@@ -60,7 +60,7 @@ Ring ParseRing(size_t &start, const std::string &wktstr){
       start++;
       break;
     } else {
-      ring.emplace_back(ParsePoint(start,wktstr));
+      ring.v.emplace_back(ParsePoint(start,wktstr));
     }
   }
 
@@ -79,7 +79,7 @@ Polygon ParsePolygon(size_t &start, const std::string &wktstr){
     TrimStr(start,wktstr);
     if(wktstr[start]=='('){
       //First ring is the outer ring, all the others are holes
-      poly.emplace_back(ParseRing(start,wktstr));
+      poly.v.emplace_back(ParseRing(start,wktstr));
     } else if(wktstr[start]==','){
       TrimStr(++start, wktstr); //Move forward from ',' and skip whitespace
     } else if(wktstr[start]==')'){
@@ -96,7 +96,7 @@ Polygon ParsePolygon(size_t &start, const std::string &wktstr){
 MultiPolygon ParseTopPolygon(size_t start, const std::string &wktstr){
   MultiPolygon mps;
   TrimStr(start,wktstr);
-  mps.push_back(ParsePolygon(start,wktstr));
+  mps.v.push_back(ParsePolygon(start,wktstr));
   return mps;
 }
 
@@ -112,7 +112,7 @@ MultiPolygon ParseMultiPolygon(size_t start, const std::string &wktstr){
   while(true){
     TrimStr(start,wktstr);
     if(wktstr[start]=='('){
-      mps.emplace_back(ParsePolygon(start,wktstr));
+      mps.v.emplace_back(ParsePolygon(start,wktstr));
     } else if(wktstr[start]==','){
       TrimStr(++start, wktstr); //Move forward from ',' and skip whitespace
     } else if(wktstr[start]==')'){
@@ -134,9 +134,9 @@ GeoCollection ReadWKT(std::string wktstr){
 
   //TODO: Trim string
   if(wktstr.compare(start,12,"MULTIPOLYGON")==0){
-    gc.push_back(ParseMultiPolygon(start+12,wktstr));
+    gc.v.push_back(ParseMultiPolygon(start+12,wktstr));
   } else if(wktstr.compare(start,7,"POLYGON")==0){
-    gc.push_back(ParseTopPolygon(start+7,wktstr));
+    gc.v.push_back(ParseTopPolygon(start+7,wktstr));
   } else{
     throw std::runtime_error("Unrecognized geometry!");
   }
