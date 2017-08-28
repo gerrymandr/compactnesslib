@@ -128,8 +128,8 @@ Ring Ring::getHull() const {
 
 void MultiPolygon::toRadians(){
   for(auto &poly: v)
-  for(auto &ring: poly.v)
-  for(auto &pt: ring.v){
+  for(auto &ring: poly)
+  for(auto &pt: ring){
     pt.x *= DEG_TO_RAD;
     pt.y *= DEG_TO_RAD;
   }
@@ -137,22 +137,22 @@ void MultiPolygon::toRadians(){
 
 void MultiPolygon::toDegrees(){
   for(auto &poly: v)
-  for(auto &ring: poly.v)
-  for(auto &pt: ring.v){
+  for(auto &ring: poly)
+  for(auto &pt: ring){
     pt.x *= RAD_TO_DEG;
     pt.y *= RAD_TO_DEG;
   }
 }
 
 const Ring& MultiPolygon::getHull() const {
-  if(!hull.v.empty())
+  if(!hull.empty())
     return hull;
 
   //Put all of the points into a ring 
   Ring temp;
   for(const auto &poly: v)
-  for(const auto &ring: poly.v)
-    temp.v.insert(temp.v.end(),ring.v.begin(),ring.v.end());
+  for(const auto &ring: poly)
+    temp.v.insert(temp.end(),ring.begin(),ring.end());
   temp.getHull();
 
   //Move temporary's hull into mp's hull
@@ -163,9 +163,9 @@ const Ring& MultiPolygon::getHull() const {
 
 void MultiPolygon::reverse() {
   for(auto &poly: v){
-    std::reverse(poly.v.at(0).v.begin(),poly.v.at(0).v.end());
-    for(unsigned int i=1;i<poly.v.size();i++)
-      std::reverse(poly.v.at(i).v.begin(),poly.v.at(i).v.end());
+    std::reverse(poly.at(0).begin(),poly.at(0).end());
+    for(unsigned int i=1;i<poly.size();i++)
+      std::reverse(poly.at(i).begin(),poly.at(i).end());
   }
 }
 
@@ -186,15 +186,15 @@ void GeoCollection::correctWindingDirection(){
 double area(const Ring &r){
   double area = 0;
 
-  if(r.v.size()<3)
+  if(r.size()<3)
     return 0;
 
   //The "shoelace" algorithm
-  unsigned int j = r.v.size()-1;
-  for(unsigned int i=0;i<r.v.size();i++){
+  unsigned int j = r.size()-1;
+  for(unsigned int i=0;i<r.size();i++){
     //std::cerr<<"j="<<j<<", i="<<i<<", size="<<r.size();
     //std::cerr<<", xj="<<r[j].x<<", yj="<<r[j].y<<std::endl;
-    area += (r.v[j].x + r.v[i].x) * (r.v[j].y - r.v[i].y);
+    area += (r[j].x + r[i].x) * (r[j].y - r[i].y);
     j = i;
   }
   
@@ -223,12 +223,12 @@ double area(const Ring &r){
 double perim(const Ring &r){
   double perim = 0;
 
-  if(r.v.size()==1)
+  if(r.size()==1)
     return 0;
 
-  for(unsigned int i=0;i<r.v.size()-1;i++)
-    perim += EuclideanDistance(r.v[i],r.v[i+1]);
-  perim += EuclideanDistance(r.v.front(),r.v.back());
+  for(unsigned int i=0;i<r.size()-1;i++)
+    perim += EuclideanDistance(r[i],r[i+1]);
+  perim += EuclideanDistance(r.front(),r.back());
 
   return perim;
 }
@@ -239,15 +239,15 @@ double hullArea(const Ring &r){
 }
 
 double areaIncludingHoles(const Polygon &p){
-  return area(p.v.at(0));
+  return area(p.at(0));
 }
 
 double areaHoles(const Polygon &p){
-  return std::accumulate(p.v.begin()+1,p.v.end(),0.0,[](const double b, const Ring &r){ return b+area(r);});
+  return std::accumulate(p.begin()+1,p.end(),0.0,[](const double b, const Ring &r){ return b+area(r);});
 }
 
 double areaIncludingHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.v.begin(),mp.v.end(),0.0,[](const double b, const Polygon &p){ return b+areaIncludingHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaIncludingHoles(p);}); 
 }
 
 double areaExcludingHoles(const MultiPolygon &mp){
@@ -255,48 +255,48 @@ double areaExcludingHoles(const MultiPolygon &mp){
 }
 
 double areaHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.v.begin(),mp.v.end(),0.0,[](const double b, const Polygon &p){ return b+areaHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaHoles(p);}); 
 }
 
 double perimExcludingHoles(const Polygon &p){
-  return perim(p.v.at(0));
+  return perim(p.at(0));
 }
 
 double perimHoles(const Polygon &p){
-  return std::accumulate(p.v.begin()+1,p.v.end(),0.0,[](const double b, const Ring &r){ return b+perim(r);});
+  return std::accumulate(p.begin()+1,p.end(),0.0,[](const double b, const Ring &r){ return b+perim(r);});
 }
 
 double perimExcludingHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.v.begin(),mp.v.end(),0.0,[](const double b, const Polygon &p){ return b+perimExcludingHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimExcludingHoles(p);}); 
 }
 
 double perimIncludingHoles(const Polygon &p){
-  return std::accumulate(p.v.begin(),p.v.end(),0.0,[](const double b, const Ring &r){ return b+perim(r);});
+  return std::accumulate(p.begin(),p.end(),0.0,[](const double b, const Ring &r){ return b+perim(r);});
 }
 
 double perimIncludingHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.v.begin(),mp.v.end(),0.0,[](const double b, const Polygon &p){ return b+perimIncludingHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimIncludingHoles(p);}); 
 }
 
 double perimHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.v.begin(),mp.v.end(),0.0,[](const double b, const Polygon &p){ return b+perimHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimHoles(p);}); 
 }
 
 
 double hullAreaOuter(const Polygon &p){
-  return hullArea(p.v.at(0));
+  return hullArea(p.at(0));
 }
 
 double hullAreaPolygonOuterRings(const MultiPolygon &mp){
-  return std::accumulate(mp.v.begin(),mp.v.end(),0.0,[](const double b, const Polygon &p){ return b+hullAreaOuter(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+hullAreaOuter(p);}); 
 }
 
 double hullAreaOfHoles(const Polygon &p){
-  return std::accumulate(p.v.begin()+1,p.v.end(),0.0,[](const double b, const Ring &r){ return b+hullArea(r);});
+  return std::accumulate(p.begin()+1,p.end(),0.0,[](const double b, const Ring &r){ return b+hullArea(r);});
 }
 
 double hullAreaOfHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.v.begin(),mp.v.end(),0.0,[](const double b, const Polygon &p){ return b+hullAreaOfHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+hullAreaOfHoles(p);}); 
 }
 
 double diameter(const Ring &r){
@@ -304,14 +304,14 @@ double diameter(const Ring &r){
 
   //TODO: There's a faster way to do this
   double maxdist = 0;
-  for(unsigned int i=0;i<hull.v.size();i++)
-  for(unsigned int j=i+1;j<hull.v.size();j++)
-    maxdist = std::max(maxdist,EuclideanDistance(hull.v.at(i),hull.v.at(j)));
+  for(unsigned int i=0;i<hull.size();i++)
+  for(unsigned int j=i+1;j<hull.size();j++)
+    maxdist = std::max(maxdist,EuclideanDistance(hull.at(i),hull.at(j)));
   return maxdist;
 }
 
 double diameterOuter(const Polygon &p){
-  return diameter(p.v.at(0));
+  return diameter(p.at(0));
 }
 
 double diameterOfEntireMultiPolygon(const MultiPolygon &mp){
@@ -326,10 +326,10 @@ const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed){
 
   cl::Path path;
   if(!reversed){
-    for(const auto &pt: ring.v)
+    for(const auto &pt: ring)
       path.emplace_back((long long)pt.x,(long long)pt.y);
   } else {
-    for(auto pt=ring.v.rbegin();pt!=ring.v.rend();pt++)
+    for(auto pt=ring.rbegin();pt!=ring.rend();pt++)
       path.emplace_back((long long)pt->x,(long long)pt->y);    
   }
 
@@ -345,13 +345,13 @@ const cl::Paths& ConvertToClipper(const MultiPolygon &mp, const bool reversed) {
 
   cl::Paths paths;
 
-  for(const auto &poly: mp.v){
+  for(const auto &poly: mp){
     //Send in outer perimter
-    paths.push_back(ConvertToClipper(poly.v.at(0), reversed));
+    paths.push_back(ConvertToClipper(poly.at(0), reversed));
 
     //Send in the holes
-    for(unsigned int i=1;i<poly.v.size();i++)
-      paths.push_back(ConvertToClipper(poly.v.at(i), !reversed));
+    for(unsigned int i=1;i<poly.size();i++)
+      paths.push_back(ConvertToClipper(poly.at(i), !reversed));
   }
 
   std::swap(mp.clipper_paths, paths);

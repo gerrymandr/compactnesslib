@@ -41,21 +41,13 @@ class Ring {
   mutable std::vector<Point2D> hull;
   Ring getHull() const;
   mutable ClipperLib::Path clipper_paths;
-  EXPOSE_STL_ITERATORS(v);
-  EXPOSE_STL_ACCESORS(v);
-  EXPOSE_FRONT_BACK(v);
-  EXPOSE_STL_MODIFIERS(v);
-  EXPOSE_STL_SIZE(v);
+  EXPOSE_STL_VECTOR(v);
 };
 
 class Polygon {
  public:
   Rings v;
-  EXPOSE_STL_ITERATORS(v);
-  EXPOSE_STL_ACCESORS(v);
-  EXPOSE_FRONT_BACK(v);
-  EXPOSE_STL_MODIFIERS(v);
-  EXPOSE_STL_SIZE(v);
+  EXPOSE_STL_VECTOR(v);
 };
 
 class MultiPolygon {
@@ -70,11 +62,7 @@ class MultiPolygon {
   MultiPolygon intersect(const MultiPolygon &b) const;
   mutable ClipperLib::Paths clipper_paths;
   void reverse();
-  EXPOSE_STL_ITERATORS(v);
-  EXPOSE_STL_ACCESORS(v);
-  EXPOSE_FRONT_BACK(v);
-  EXPOSE_STL_MODIFIERS(v);
-  EXPOSE_STL_SIZE(v);
+  EXPOSE_STL_VECTOR(v);
 };
 
 class GeoCollection {
@@ -83,11 +71,7 @@ class GeoCollection {
   std::string prj_str;
   void reverse();
   void correctWindingDirection();
-  EXPOSE_STL_ITERATORS(v);
-  EXPOSE_STL_ACCESORS(v);
-  EXPOSE_FRONT_BACK(v);
-  EXPOSE_STL_MODIFIERS(v);
-  EXPOSE_STL_SIZE(v);
+  EXPOSE_STL_VECTOR(v);
 };
 
 inline double EuclideanDistance(const Point2D &a, const Point2D &b);
@@ -181,9 +165,9 @@ MultiPolygon GetBoundingCircle(const T &geom){
   const auto radius = EuclideanDistance(mpa,mpb);
 
   MultiPolygon mp;
-  mp.v.emplace_back();             //Make a polygon
-  mp.v.back().v.emplace_back();      //Make a ring
-  auto &ring = mp.v.back().v.back().v; //Get the ring
+  mp.emplace_back();             //Make a polygon
+  mp.back().emplace_back();      //Make a ring
+  auto &ring = mp.back().back(); //Get the ring
 
   //Make a "circle"
   for(int i=0;i<CIRCLE_PT_COUNT;i++)
