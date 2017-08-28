@@ -65,6 +65,7 @@ class GeoCollection : public MultiPolygons {
   void correctWindingDirection();
 };
 
+inline double EuclideanDistance(const Point2D &a, const Point2D &b);
 
 
 double area(const Ring &r);
@@ -116,6 +117,61 @@ double IntersectionArea(const T &a, const U &b) {
     area += cl::Area(path);
   return area;
 }
+
+
+
+template<class T>
+std::pair<Point2D, Point2D> MostDistantPoints(const T &geom){
+  //We'll use the Convex Hull to find the two most distant points
+  const auto &hull = geom.getHull();
+
+  std::pair<unsigned int, unsigned int> idx_maxpts;
+  double maxdist = 0;
+
+  //TODO: There's a faster way to do this  
+  for(unsigned int i=0;i<hull.size();i++)
+  for(unsigned int j=i+1;j<hull.size();j++){
+    const double dist = std::max(maxdist,EuclideanDistance(hull.at(i),hull.at(j)));
+    if(dist>maxdist)
+      idx_maxpts = std::make_pair(i,j);
+  }
+
+  return std::make_pair(hull.at(idx_maxpts.first), hull.at(idx_maxpts.second));
+}
+
+
+
+template<class T>
+MultiPolygon GetBoundingCircle(const T &geom){
+  //Number of unique points from which to construct the circle. The circle will
+  //have one more point of than this in order to form a closed ring).
+  const int CIRCLE_PT_COUNT = 1000;
+
+  const auto dist_pts = MostDistantPoints(geom);
+
+  const Point2D &mpa = dist_pts.first;
+  const Point2D &mpb = dist_pts.second;
+
+  const Point2D midpt( (mpa.x+mpb.x)/2. , (mpa.y+mpb.y)/2. );
+  const auto radius = EuclideanDistance(mpa,mpb);
+
+  MultiPolygon mp;
+  mp.v.emplace_back();             //Make a polygon
+  mp.v.back().v.emplace_back();      //Make a ring
+  auto &ring = mp.v.back().v.back().v; //Get the ring
+
+  //Make a "circle"
+  for(int i=0;i<CIRCLE_PT_COUNT;i++)
+    ring.emplace_back(
+      radius*std::cos(-2*M_PI*i/(double)CIRCLE_PT_COUNT),
+      radius*std::sin(-2*M_PI*i/(double)CIRCLE_PT_COUNT)
+    );
+  //Close the "circle"
+  ring.push_back(ring.front());
+
+  return mp;
+}
+
 
 
 }
