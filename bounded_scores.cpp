@@ -26,8 +26,6 @@ double ScoreReockPTB(const MultiPolygon &mp, const MultiPolygon &border){
   const auto   iarea  = IntersectionArea(circle, border);
   const double area   = areaIncludingHoles(mp);
 
-  const auto& ring = circle.back().back();
-
   double ratio = area/iarea;
   if(ratio>1)
     ratio = 1;
