@@ -115,6 +115,9 @@ Ring Ring::getHull() const {
 
   L.insert(L.end(),U.begin(),U.end());
 
+  //Close the ring
+  L.push_back(L.front());
+
   hull = L;
 
   //NOTE: It may be necessary to reverse the ring to give a positive area
