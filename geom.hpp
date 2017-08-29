@@ -153,42 +153,8 @@ std::pair<Point2D, Point2D> MostDistantPoints(const T &geom){
   return std::make_pair(hull.at(idx_maxpts.first), hull.at(idx_maxpts.second));
 }
 
-
-
-template<class T>
-MultiPolygon GetBoundingCircle(const T &geom){
-  static int ciri = 0;
-  ciri++;
-  //Number of unique points from which to construct the circle. The circle will
-  //have one more point of than this in order to form a closed ring).
-  const int CIRCLE_PT_COUNT = 50;
-
-  const auto dist_pts = MostDistantPoints(geom);
-
-  const Point2D &mpa = dist_pts.first;
-  const Point2D &mpb = dist_pts.second;
-
-  const Point2D midpt( (mpa.x+mpb.x)/2. , (mpa.y+mpb.y)/2. );
-  const auto radius = EuclideanDistance(mpa,mpb)/2.;
-
-  MultiPolygon mp;
-  mp.emplace_back();             //Make a polygon
-  mp.back().emplace_back();      //Make a ring
-  auto &ring = mp.back().back(); //Get the ring
-
-  //Make a "circle"
-  for(int i=0;i<CIRCLE_PT_COUNT;i++)
-    ring.emplace_back(
-      midpt.x+radius*std::cos(-2*M_PI*i/(double)CIRCLE_PT_COUNT),
-      midpt.y+radius*std::sin(-2*M_PI*i/(double)CIRCLE_PT_COUNT)
-    );
-  //Close the "circle"
-  ring.push_back(ring.front());
-
-  return mp;
-}
-
-
+MultiPolygon GetBoundingCircle(const MultiPolygon &mp);
+MultiPolygon GetBoundingCircleMostDistant(const MultiPolygon &mp);
 
 }
 

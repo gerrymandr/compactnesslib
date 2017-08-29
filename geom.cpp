@@ -10,6 +10,7 @@
 #include <memory>
 #include "lib/clipper.hpp"
 #include "lib/doctest.h"
+#include "lib/miniball.hpp"
 
 static const double DEG_TO_RAD = M_PI/180.0;
 static const double RAD_TO_DEG = 180.0/M_PI;
@@ -360,6 +361,83 @@ const cl::Paths& ConvertToClipper(const MultiPolygon &mp, const bool reversed) {
 }
 
 
+
+MultiPolygon GetBoundingCircle(const MultiPolygon &mp){
+  //Number of unique points from which to construct the circle. The circle will
+  //have one more point of than this in order to form a closed ring).
+  const int CIRCLE_PT_COUNT = 1000;
+
+  std::vector< std::vector<double> > pts;
+  for(const auto &poly: mp)
+  for(const auto &ring: poly)
+  for(const auto &pt: ring)
+    pts.push_back(std::vector<double>({{pt.x,pt.y}}));
+
+  // define the types of iterators through the points and their coordinates
+  // ----------------------------------------------------------------------
+  typedef std::vector<std::vector<double> >::const_iterator PointIterator; 
+  typedef std::vector<double>::const_iterator CoordIterator;
+
+  // create an instance of Miniball
+  // ------------------------------
+  typedef Miniball::
+    Miniball <Miniball::CoordAccessor<PointIterator, CoordIterator> > 
+    MB;
+
+  MB mb (2, pts.begin(), pts.end());
+  
+  const Point2D midpt(mb.center()[0], mb.center()[1]);
+  const double radius = std::sqrt(mb.squared_radius());
+  //"Computation time was "<< mb.get_time() << " seconds\n";
+
+  MultiPolygon circle;
+  circle.emplace_back();             //Make a polygon
+  circle.back().emplace_back();      //Make a ring
+  auto &ring = circle.back().back(); //Get the ring
+
+  //Make a "circle"
+  for(int i=0;i<CIRCLE_PT_COUNT;i++)
+    ring.emplace_back(
+      midpt.x+radius*std::cos(-2*M_PI*i/(double)CIRCLE_PT_COUNT),
+      midpt.y+radius*std::sin(-2*M_PI*i/(double)CIRCLE_PT_COUNT)
+    );
+  //Close the "circle"
+  ring.push_back(ring.front());
+
+  return circle;
+}
+
+
+
+MultiPolygon GetBoundingCircleMostDistant(const MultiPolygon &mp){
+  //Number of unique points from which to construct the circle. The circle will
+  //have one more point of than this in order to form a closed ring).
+  const int CIRCLE_PT_COUNT = 1000;
+
+  const auto dist_pts = MostDistantPoints(mp);
+
+  const Point2D &mpa = dist_pts.first;
+  const Point2D &mpb = dist_pts.second;
+
+  const Point2D midpt( (mpa.x+mpb.x)/2. , (mpa.y+mpb.y)/2. );
+  const auto radius = EuclideanDistance(mpa,mpb)/2.;
+
+  MultiPolygon circle;
+  circle.emplace_back();             //Make a polygon
+  circle.back().emplace_back();      //Make a ring
+  auto &ring = circle.back().back(); //Get the ring
+
+  //Make a "circle"
+  for(int i=0;i<CIRCLE_PT_COUNT;i++)
+    ring.emplace_back(
+      midpt.x+radius*std::cos(-2*M_PI*i/(double)CIRCLE_PT_COUNT),
+      midpt.y+radius*std::sin(-2*M_PI*i/(double)CIRCLE_PT_COUNT)
+    );
+  //Close the "circle"
+  ring.push_back(ring.front());
+
+  return circle;
+}
 
 
 
