@@ -11,6 +11,7 @@
 namespace complib {
   const std::vector<std::string>& getListOfUnboundedScores();
 
+  int    ScoreHoleCount              (const MultiPolygon &mp);
   double ScorePolsbyPopper           (const MultiPolygon &mp);
   double ScoreSchwartzberg           (const MultiPolygon &mp);
   double ScoreConvexHull             (const MultiPolygon &mp);
