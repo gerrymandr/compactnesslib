@@ -3,6 +3,7 @@
 #include "../lib/doctest.h"
 #include <cmath>
 #include <map>
+#include <iostream>
 #include <algorithm>
 
 using namespace complib;
@@ -32,13 +33,20 @@ TEST_CASE("Square Test"){
 
   auto &mp = gc.at(0);
 
-  CHECK(areaIncludingHoles(mp)==4);
-  CHECK(perimExcludingHoles(mp)==8);
-  CHECK(hullAreaPolygonOuterRings(mp)==4);
-  CHECK(hullAreaOfHoles(mp)==0);
-  CHECK(areaHoles(mp)==0);
-  CHECK(perimHoles(mp)==0);
-  CHECK(diameterOfEntireMultiPolygon(mp)==doctest::Approx(std::sqrt(2*2+2*2)));
+  SUBCASE("Simple metrics"){
+    CHECK(areaIncludingHoles(mp)==4);
+    CHECK(perimExcludingHoles(mp)==8);
+    CHECK(hullAreaPolygonOuterRings(mp)==4);
+    CHECK(hullAreaOfHoles(mp)==0);
+    CHECK(areaHoles(mp)==0);
+    CHECK(perimHoles(mp)==0);
+    CHECK(diameterOfEntireMultiPolygon(mp)==doctest::Approx(std::sqrt(2*2+2*2)));
+  }
+
+  SUBCASE("Bounding Circle"){
+    const auto circle = GetBoundingCircle(mp);
+    CHECK(areaIncludingHoles(circle)==doctest::Approx(2*M_PI));
+  }
 }
 
 TEST_CASE("Circle"){
@@ -140,6 +148,12 @@ TEST_CASE("Polygon with hole"){
   CHECK(areaIncludingHoles(gcb[0])==4);
   CHECK(areaHoles(gca[0])==1);
   CHECK(IntersectionArea(gca[0],gcb[0])==3);
+}
+
+TEST_CASE("WKT output"){
+  const std::string inita = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[4,0],[4,4],[0,4],[0,0]],[[1,1],[2,1],[2,2],[1,2],[1,1]]]}}]}";
+  const auto gca = ReadGeoJSON(inita);
+  std::cout<<GetWKT(gca.at(0))<<std::endl;
 }
 
 
