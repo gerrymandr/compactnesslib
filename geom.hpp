@@ -5,8 +5,8 @@
 #include <cmath>
 #include <string>
 #include "Props.hpp"
-#include "clipper.hpp"
-#include "iterator_tpl.h"
+#include "lib/clipper.hpp"
+#include "lib/iterator_tpl.h"
 
 namespace complib {
 

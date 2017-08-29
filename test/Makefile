@@ -1,4 +1,4 @@
-SOURCES = $(wildcard ../*.cpp) $(wildcard ../shapelib/*.cpp) test.cpp
+SOURCES = $(wildcard ../*.cpp) $(wildcard ../shapelib/*.cpp) $(wildcard ../lib/*.cpp) test.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 CXX_FLAGS = --std=c++11 -march=native -mtune=native -g --coverage -O0

@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "../compactnesslib.hpp"
-#include "../doctest.h"
+#include "../lib/doctest.h"
 #include <cmath>
 #include <map>
 #include <algorithm>

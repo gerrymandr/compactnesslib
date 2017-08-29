@@ -1,4 +1,3 @@
-#include "doctest.h"
 #include "bounded_scores.hpp"
 #include "geom.hpp"
 #include <cmath>
