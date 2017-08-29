@@ -5,7 +5,6 @@
 #include "bounded_scores.hpp"
 #include "geojson.hpp"
 #include "geom.hpp"
-#include "Reprojector.hpp"
 #include "shapefile.hpp"
 #include "csv.hpp"
 #include "wkt.hpp"
