@@ -10,4 +10,4 @@ all: $(OBJECTS)
 	$(CXX) -c $(CXX_FLAGS) $< -o $@ 
 
 clean:
-	rm -rf compactness_test.exe ../*.o ../shapelib/*.o *.gcno *.gcda *.gcov
+	rm -rf compactness_test.exe *.o ../*.o ../shapelib/*.o ../lib/*.o *.gcno *.gcda *.gcov
