@@ -27,17 +27,32 @@ double ScoreSchwartzberg(const MultiPolygon &mp){
   return circum/perim;
 }
 
-double ScoreConvexHull(const MultiPolygon &mp){
+double ScoreConvexHullPS(const MultiPolygon &mp){
   const double area      = areaIncludingHoles(mp);
   const double hull_area = hullAreaPolygonOuterRings(mp);
   return area/hull_area;
 }
 
+double ScoreConvexHullPT(const MultiPolygon &mp){
+  const double area_mp   = areaIncludingHoles(mp);
+  const double hull_area = area(mp.getHull());
+  return area_mp/hull_area;
+}
+
 //TODO: Use "https://people.inf.ethz.ch/gaertner/subdir/software/miniball.html"
-double ScoreReock(const MultiPolygon &mp){
+double ScoreReockPT(const MultiPolygon &mp){
   const double area      = areaIncludingHoles(mp);
   const double radius    = diameterOfEntireMultiPolygon(mp)/2;
   const double circ_area = M_PI*radius*radius;
+
+  return area/circ_area;
+}
+
+double ScoreReockPS(const MultiPolygon &mp){
+  const double area = areaIncludingHoles(mp);
+  double circ_area  = 0;
+  for(const auto &poly: mp)
+    circ_area += M_PI*std::pow(diameterOuter(poly)/2.0,2.0);
 
   return area/circ_area;
 }
@@ -75,8 +90,10 @@ const unbounded_score_map_t unbounded_score_map({
   {"HoleCount",  ScoreHoleCount},
   {"PolsbyPopp", ScorePolsbyPopper},
   {"Schwartzbe", ScoreSchwartzberg},
-  {"CvxHullPS",  ScoreConvexHull},
-  {"Reock",      ScoreReock}
+  {"CvxHullPS", ScoreConvexHullPS},
+  {"CvxHullPT", ScoreConvexHullPT},
+  {"ReockPT", ScoreReockPT},
+  {"ReockPS", ScoreReockPS}
 });
 
 }
