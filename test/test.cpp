@@ -69,8 +69,8 @@ TEST_CASE("Circle"){
   CHECK(diameterOfEntireMultiPolygon(mp)==doctest::Approx(2*33));
   CHECK(ScorePolsbyPopper(mp)==doctest::Approx(1.0));
   CHECK(ScoreSchwartzberg(mp)==doctest::Approx(1.0));
-  CHECK(ScoreConvexHull(mp)==doctest::Approx(1.0));
-  CHECK(ScoreReock(mp)==doctest::Approx(1.0));
+  CHECK(ScoreConvexHullPT(mp)==doctest::Approx(1.0));
+  CHECK(ScoreReockPT(mp)==doctest::Approx(1.0));
 }
 
 TEST_CASE("Name lenth"){
