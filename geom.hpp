@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cmath>
+#include <set>
 #include <string>
 #include "Props.hpp"
 #include "lib/clipper.hpp"
@@ -55,6 +56,7 @@ class MultiPolygon {
   Polygons v;
   Props props;
   Scores scores;
+  std::set<unsigned int> neighbours;
   mutable Ring hull;
   const Ring& getHull() const;
   void toRadians();
