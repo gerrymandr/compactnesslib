@@ -4,7 +4,8 @@
 #include "geom.hpp"
 
 namespace complib {
-  void FindNeighbours(GeoCollection &gc);
+  void FindNeighbouringDistricts(GeoCollection &gc);
+  void FindExteriorDistricts(GeoCollection &subunits, const GeoCollection &superunits);
 }
 
 #endif

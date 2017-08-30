@@ -88,7 +88,7 @@ struct KDTreeVectorOfVectorsAdaptor {
 
 namespace complib {
 
-void FindNeighbours(GeoCollection &gc){
+void FindNeighbouringDistricts(GeoCollection &gc){
   const double max_neighbour_pt_dist_squared = 1000*1000; //in metres
 
   //Point along the borders
@@ -124,7 +124,7 @@ void FindNeighbours(GeoCollection &gc){
   }
 }
 
-void ExteriorDistrict(GeoCollection &subunits, const GeoCollection &superunits){
+void FindExteriorDistricts(GeoCollection &subunits, const GeoCollection &superunits){
   const double max_neighbour_pt_dist_squared = 1000*1000; //in metres
 
   //Point along the borders
@@ -156,12 +156,16 @@ void ExteriorDistrict(GeoCollection &subunits, const GeoCollection &superunits){
       std::vector<std::pair<size_t, double> > temp;
       border_idx.index->radiusSearch(qp, max_neighbour_pt_dist_squared, temp, params);
       if(temp.size()>0){
-        mp.exterior_child = true;
+        //NOTE: Could make this all faster by promoting this to an actual
+        //property, but then I would need to modify the output drivers.
+        mp.props["EXTCHILD"] = "T"; 
         goto escape_the_multipolygon;
       }
     }
     escape_the_multipolygon:
     (void)1;
+    if(!mp.props.count("EXTCHILD"))
+      mp.props["EXTCHILD"] = "F";
   }
 }
 
