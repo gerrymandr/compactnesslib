@@ -56,7 +56,6 @@ class MultiPolygon {
   Polygons v;
   Props props;
   Scores scores;
-  std::set<unsigned int> neighbours;
   mutable Ring hull;
   const Ring& getHull() const;
   void toRadians();
@@ -65,6 +64,9 @@ class MultiPolygon {
   mutable ClipperLib::Paths clipper_paths;
   void reverse();
   EXPOSE_STL_VECTOR(v);
+
+  std::set<unsigned int> neighbours;
+  bool exterior_child = false;
 };
 
 class GeoCollection {
