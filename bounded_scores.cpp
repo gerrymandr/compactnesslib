@@ -4,10 +4,14 @@
 #include <vector>
 #include <stdexcept>
 #include <unordered_map>
+#include "lib/clipper.hpp"
+
+#include <sstream>  //TODO
+#include <iostream> //TODO
 
 namespace complib {
 
-
+namespace cl = ClipperLib;
 
 double ScoreConvexHullPTB(const MultiPolygon &mp, const MultiPolygon &border){
   const double area      = areaIncludingHoles(mp);
