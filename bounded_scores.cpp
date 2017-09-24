@@ -231,7 +231,8 @@ const std::vector<std::string>& getListOfBoundedScores(){
 
 const bounded_score_map_t bounded_score_map({
   {"CvxHullPTB", ScoreConvexHullPTB},
-  {"ReockPTB",   ScoreReockPTB}
+  {"ReockPTB",   ScoreReockPTB},
+  {"AreaUncert", ScoreBorderAreaUncertainty}
 });
 
 }
