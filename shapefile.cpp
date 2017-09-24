@@ -183,7 +183,15 @@ GeoCollection ReadShapefile(std::string filename){
   ReadShapeAttributes(mgons,filename);
   ReadShapeProj(mgons,filename);
 
-  //mgons.correctWindingDirection();
+  //TODO
+  for(auto &mp: mgons)
+  for(auto &poly: mp)
+  for(auto &ring: poly){
+    if(!(ring.front().x==ring.back().x && ring.front().y==ring.back().y))
+      throw std::runtime_error("Shapefile had an unclosed ring!");
+  }
+
+  mgons.correctWindingDirection();
 
   return mgons;
 }
