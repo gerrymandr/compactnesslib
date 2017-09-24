@@ -325,8 +325,10 @@ double diameterOfEntireMultiPolygon(const MultiPolygon &mp){
 
 
 const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed){
-  if(!ring.clipper_paths.empty())
-    return ring.clipper_paths;
+  //if(!ring.clipper_paths.empty())
+  //  return ring.clipper_paths;
+
+  ring.clipper_paths.clear();
 
   cl::Path path;
   if(!reversed){
