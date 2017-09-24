@@ -299,6 +299,22 @@ double hullAreaOfHoles(const MultiPolygon &mp){
   return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+hullAreaOfHoles(p);}); 
 }
 
+double areaHoles(const Polygon &p){
+  return std::accumulate(p.begin()+1,p.end(),0.0,[](const double b, const Ring &r){ return b+area(r);});
+}
+
+unsigned holeCount(const Polygon &p){
+  return p.size()-1;
+}
+
+unsigned polyCount(const MultiPolygon &mp){
+  return mp.size();
+}
+
+unsigned holeCount(const MultiPolygon &mp){
+  return std::accumulate(mp.begin(),mp.end(),0,[](const unsigned b, const Polygon &p){ return b+holeCount(p);});
+}
+
 double diameter(const Ring &r){
   const auto &hull = r.getHull();
 

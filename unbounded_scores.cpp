@@ -21,7 +21,7 @@ double ScoreSchwartzberg(const MultiPolygon &mp){
   return circum/perim;
 }
 
-double ScoreConvexHull(const MultiPolygon &mp){
+double CvxHullPS(const MultiPolygon &mp){
   const double area      = areaIncludingHoles(mp);
   const double hull_area = hullAreaPolygonOuterRings(mp);
   return area/hull_area;
@@ -66,9 +66,11 @@ const std::vector<std::string>& getListOfUnboundedScores(){
 const unbounded_score_map_t unbounded_score_map({
   {"areaAH",     [](const MultiPolygon &mp) { return areaIncludingHoles(mp);  }},
   {"perimSH",    [](const MultiPolygon &mp) { return perimExcludingHoles(mp); }},
+  {"holeCount",  holeCount},
+  {"polyCount",  polyCount},
   {"PolsbyPopp", ScorePolsbyPopper},
   {"Schwartzbe", ScoreSchwartzberg},
-  {"CvxHullPS",  ScoreConvexHull},
+  {"CvxHullPS",  CvxHullPS},
   {"Reock",      ScoreReock}
 });
 
