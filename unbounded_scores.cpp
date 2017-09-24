@@ -80,8 +80,8 @@ const std::vector<std::string>& getListOfUnboundedScores(){
 const unbounded_score_map_t unbounded_score_map({
   {"areaAH",     [](const MultiPolygon &mp) { return areaIncludingHoles(mp);  }},
   {"perimSH",    [](const MultiPolygon &mp) { return perimExcludingHoles(mp); }},
-  {"HoleCount",  holeCount},
-  {"PolyCount",  polyCount},
+  {"HoleCount",  [](const MultiPolygon &mp) { return holeCount(mp); }},
+  {"PolyCount",  [](const MultiPolygon &mp) { return polyCount(mp); }},
   {"PolsbyPopp", ScorePolsbyPopper},
   {"Schwartzbe", ScoreSchwartzberg},
   {"CvxHullPS",  ScoreConvexHullPS},
