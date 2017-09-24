@@ -66,7 +66,6 @@ class MultiPolygon {
   EXPOSE_STL_VECTOR(v);
 
   std::set<unsigned int> neighbours;
-  bool exterior_child = false;
 };
 
 class GeoCollection {

@@ -8,5 +8,6 @@
 #include "shapefile.hpp"
 #include "csv.hpp"
 #include "wkt.hpp"
+#include "neighbours.hpp"
 
 #endif
