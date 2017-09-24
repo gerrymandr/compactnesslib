@@ -6,13 +6,6 @@
 
 namespace complib {
 
-int ScoreHoleCount(const MultiPolygon &mp){
-  int holes = 0;
-  for(auto &poly: mp)
-    holes += poly.size()-1;
-  return holes;
-}
-
 double ScorePolsbyPopper(const MultiPolygon &mp){
   const double area  = areaIncludingHoles(mp);
   const double perim = perimExcludingHoles(mp);
@@ -87,13 +80,14 @@ const std::vector<std::string>& getListOfUnboundedScores(){
 const unbounded_score_map_t unbounded_score_map({
   {"areaAH",     [](const MultiPolygon &mp) { return areaIncludingHoles(mp);  }},
   {"perimSH",    [](const MultiPolygon &mp) { return perimExcludingHoles(mp); }},
-  {"HoleCount",  ScoreHoleCount},
+  {"HoleCount",  holeCount},
+  {"PolyCount",  polyCount},
   {"PolsbyPopp", ScorePolsbyPopper},
   {"Schwartzbe", ScoreSchwartzberg},
-  {"CvxHullPS", ScoreConvexHullPS},
-  {"CvxHullPT", ScoreConvexHullPT},
-  {"ReockPT", ScoreReockPT},
-  {"ReockPS", ScoreReockPS}
+  {"CvxHullPS",  ScoreConvexHullPS},
+  {"CvxHullPT",  ScoreConvexHullPT},
+  {"ReockPT",    ScoreReockPT},
+  {"ReockPS",    ScoreReockPS}
 });
 
 }
