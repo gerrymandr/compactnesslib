@@ -5,6 +5,7 @@
 #include <streambuf>
 #include <stdexcept>
 #include <sstream>
+#include <iomanip>
 #include <string>
 
 namespace complib {
@@ -152,6 +153,37 @@ GeoCollection ReadWKTFile(std::string filename) {
   std::string wktstr((std::istreambuf_iterator<char>(fin)), std::istreambuf_iterator<char>());
 
   return ReadWKT(wktstr);
+}
+
+
+
+std::string GetWKT(const MultiPolygon &mp){
+  std::ostringstream ret;
+  ret<<"MULTIPOLYGON (";
+  for(unsigned int p=0;p<mp.size();p++){
+    const auto &poly = mp.at(p);
+    ret<<"(";
+    for(unsigned int r=0;r<poly.size();r++){
+      const auto &ring = poly.at(r);
+      ret<<"(";
+      for(unsigned int i=0;i<ring.size();i++){
+        const auto &pt = ring.at(i);
+        ret<<std::fixed<<std::setprecision(10)<<ring[i].x<<" "
+           <<std::fixed<<std::setprecision(10)<<ring[i].y;
+        if(i<ring.size()-1)
+          ret<<",";
+      }
+      ret<<")";
+      if(r<poly.size()-1)
+        ret<<",";
+    }
+    ret<<")";
+    if(p<mp.size()-1)
+      ret<<",";
+  }
+  ret<<")";
+
+  return ret.str();
 }
 
 }

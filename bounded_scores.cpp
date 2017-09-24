@@ -1,4 +1,3 @@
-#include "doctest.h"
 #include "bounded_scores.hpp"
 #include "geom.hpp"
 #include <cmath>
@@ -8,10 +7,28 @@
 
 namespace complib {
 
+
+
 double ScoreConvexHullPTB(const MultiPolygon &mp, const MultiPolygon &border){
   const double area      = areaIncludingHoles(mp);
   const double hull_area = IntersectionArea(mp.getHull(),border);
-  return area/hull_area;
+  double ratio = area/hull_area;
+  if(ratio>1)
+    ratio = 1;
+  return ratio;
+}
+
+
+
+double ScoreReockPTB(const MultiPolygon &mp, const MultiPolygon &border){
+  const auto   circle = GetBoundingCircle(mp);
+  const auto   iarea  = IntersectionArea(circle, border);
+  const double area   = areaIncludingHoles(mp);
+
+  double ratio = area/iarea;
+  if(ratio>1)
+    ratio = 1;
+  return ratio;
 }
 
 
@@ -73,7 +90,8 @@ const std::vector<std::string>& getListOfBoundedScores(){
 
 
 const bounded_score_map_t bounded_score_map({
-  {"CvxHullPTB", ScoreConvexHullPTB}
+  {"CvxHullPTB", ScoreConvexHullPTB},
+  {"ReockPTB",   ScoreReockPTB}
 });
 
 }

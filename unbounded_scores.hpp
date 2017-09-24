@@ -13,8 +13,10 @@ namespace complib {
 
   double ScorePolsbyPopper           (const MultiPolygon &mp);
   double ScoreSchwartzberg           (const MultiPolygon &mp);
-  double ScoreConvexHull             (const MultiPolygon &mp);
-  double ScoreReock                  (const MultiPolygon &mp);
+  double ScoreConvexHullPT           (const MultiPolygon &mp);
+  double ScoreReockPT                (const MultiPolygon &mp);
+  double ScoreConvexHullPS           (const MultiPolygon &mp);
+  double ScoreReockPS                (const MultiPolygon &mp);
   void CalculateAllUnboundedScores   (GeoCollection &mps);
   void CalculateListOfUnboundedScores(GeoCollection &gc, std::vector<std::string> score_list);
 
