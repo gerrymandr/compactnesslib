@@ -37,6 +37,37 @@ double ScoreReockPTB(const MultiPolygon &mp, const MultiPolygon &border){
 
 
 
+// std::string OutputPath(const cl::Path &path){
+//   std::ostringstream out;
+//   out << "POLYGON((";
+//   for(unsigned int pi=0;pi<path.size();pi++){
+//     out<<path[pi].X<<" "<<path[pi].Y;
+//     if(pi<path.size()-1)
+//       out<<",";
+//   }
+//   out<<"))";
+//   return out.str();
+// }
+
+// std::string OutputPaths(const cl::Paths &paths){
+//   std::ostringstream out;
+//   out << "MULTIPOLYGON(";
+//   for(unsigned int psi=0;psi<paths.size();psi++){
+//     out<<"((";
+//     for(unsigned int pi=0;pi<paths[psi].size();pi++){
+//       out<<paths[psi][pi].X<<" "<<paths[psi][pi].Y;
+//       if(pi<paths[psi].size()-1)
+//         out<<",";
+//     }
+//     out<<"))";
+//     if(psi<paths.size()-1)
+//       out<<",";
+//   }
+//   out<<")";
+//   return out.str();
+// }
+
+
 void CalculateAllBoundedScores(
   GeoCollection &subunits,
   const GeoCollection &superunits,
