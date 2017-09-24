@@ -330,37 +330,32 @@ const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed){
 
   ring.clipper_paths.clear();
 
-  cl::Path path;
   if(!reversed){
     for(const auto &pt: ring)
-      path.emplace_back((long long)pt.x,(long long)pt.y);
+      ring.clipper_paths.emplace_back((long long)pt.x,(long long)pt.y);
   } else {
     for(auto pt=ring.rbegin();pt!=ring.rend();pt++)
-      path.emplace_back((long long)pt->x,(long long)pt->y);    
+      ring.clipper_paths.emplace_back((long long)pt->x,(long long)pt->y);    
   }
-
-  std::swap(ring.clipper_paths,path);
 
   return ring.clipper_paths;
 }
 
 
 const cl::Paths& ConvertToClipper(const MultiPolygon &mp, const bool reversed) {
-  if(!mp.clipper_paths.empty())
-    return mp.clipper_paths;
+  //if(!mp.clipper_paths.empty())
+  //  return mp.clipper_paths;
 
-  cl::Paths paths;
+  mp.clipper_paths.clear();
 
   for(const auto &poly: mp){
     //Send in outer perimter
-    paths.push_back(ConvertToClipper(poly.at(0), reversed));
+    mp.clipper_paths.push_back(ConvertToClipper(poly.at(0), reversed));
 
     //Send in the holes
     for(unsigned int i=1;i<poly.size();i++)
-      paths.push_back(ConvertToClipper(poly.at(i), !reversed));
+      mp.clipper_paths.push_back(ConvertToClipper(poly.at(i), !reversed));
   }
-
-  std::swap(mp.clipper_paths, paths);
 
   return mp.clipper_paths;
 }
