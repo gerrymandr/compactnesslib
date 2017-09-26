@@ -66,7 +66,6 @@ class MultiPolygon {
   EXPOSE_STL_VECTOR(v);
 
   std::set<unsigned int> neighbours;
-  bool exterior_child = false;
 };
 
 class GeoCollection {
@@ -112,6 +111,9 @@ double diameter(const Ring &r);
 double diameterOuter(const Polygon &p);
 double diameterOfEntireMultiPolygon(const MultiPolygon &mp);
 
+unsigned holeCount(const Polygon &p);
+unsigned polyCount(const MultiPolygon &mp);
+unsigned holeCount(const MultiPolygon &mp);
 
 
 const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed);
