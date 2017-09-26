@@ -162,6 +162,39 @@ TEST_CASE("WKT output"){
 
 
 
+
+TEST_CASE("SpIndex"){
+  SpIndex sp;
+  int id=0;
+  for(double y=0;y<1000;y+=100)
+  for(double x=0;x<1000;x+=100)
+    sp.addBox(x,y,x+100,y+100,id++);
+
+  CHECK(sp.queryPoint(Point2D(350,350))==33);
+  CHECK(sp.queryPoint(Point2D(750,550))==57);
+
+  Polygon p;
+  p.exterior.emplace_back(1200,1200);
+  p.exterior.emplace_back(1200,1300);
+  p.exterior.emplace_back(1300,1300);
+  p.exterior.emplace_back(1300,1200);
+
+  AddPolygonToSpIndex(p, sp, 347);
+  sp.buildIndex();
+
+  CHECK(sp.queryPoint(Point2D(1250,1270))==347);
+  CHECK(sp.queryPoint(Point2D(2750,3379))==-1);
+
+  CHECK(p.containsPoint(Point2D(1250,1270)));
+  CHECK(p.containsPoint(Point2D(1243,1222)));
+  CHECK(!p.containsPoint(Point2D(1194,1222)));
+}
+
+
+
+
+
+
 /*
 TEST_CASE("Polygon"){
   Polygon p;

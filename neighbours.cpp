@@ -1,6 +1,7 @@
 #include "neighbours.hpp"
 #include "geom.hpp"
 #include "lib/nanoflann.hpp"
+#include "SpIndex.hpp"
 #include <vector>
 
 
@@ -166,6 +167,36 @@ void FindExteriorDistricts(GeoCollection &subunits, const GeoCollection &superun
     (void)1;
     if(!mp.props.count("EXTCHILD"))
       mp.props["EXTCHILD"] = "F";
+  }
+}
+
+
+
+void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
+  //Make an Rtree!
+  SpIndex<double, unsigned int> sp;
+
+  //Add all superunits to the Rtree
+  for(unsigned int sup=0;sup<superunits.size();sup++)
+    AddToSpIndex(superunits.at(sup), sp, sup);
+  sp.buildIndex();
+
+  for(auto &sub: subunits){
+    //Area of subunit
+    const auto sub_area = areaIncludingHoles(sub);
+
+    //All superunits which intersect the subunit
+    const auto potential_parents = sp.query(sub);
+
+    for(const auto &pp: potential_parents){
+      auto ifrac = IntersectionArea(superunits.at(pp), sub)/sub_area;
+
+      //Round to 1 if we're close enough
+      if(ifrac>0.997)
+        ifrac = 1;
+
+      sub.parents.emplace_back(pp, ifrac);
+    }
   }
 }
 

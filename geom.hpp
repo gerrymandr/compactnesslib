@@ -5,6 +5,7 @@
 #include <cmath>
 #include <set>
 #include <string>
+#include <limits>
 #include "Props.hpp"
 #include "lib/clipper.hpp"
 #include "lib/iterator_tpl.h"
@@ -25,6 +26,20 @@ typedef std::vector<Ring>         Rings;
 typedef std::vector<MultiPolygon> MultiPolygons;
 
 void PrintProps(const Props &ps);
+
+class BoundingBox {
+ private:
+  static const infty = std::numeric_limits<int>::max();
+ public:
+  double min[2] = {{infty,infty}};
+  double max[2] = {{-infty,-infty}};
+  BoundingBox() = default;
+  BoundingBox(int minx, int miny, int maxx, int maxy);
+  double& minx();
+  double& miny();
+  double& maxx();
+  double& maxy();
+};
 
 class Point2D {
  public:
@@ -63,9 +78,11 @@ class MultiPolygon {
   MultiPolygon intersect(const MultiPolygon &b) const;
   mutable ClipperLib::Paths clipper_paths;
   void reverse();
+  BoundingBox bbox() const;
   EXPOSE_STL_VECTOR(v);
 
   std::set<unsigned int> neighbours;
+  std::set<std::pair<unsigned int, double> > parents;
   bool exterior_child = false;
 };
 

@@ -52,6 +52,18 @@ Point2D::Point2D(double x0, double y0) {
 }
 
 
+BoundingBox::BoundingBox(int minx, int miny, int maxx, int maxy){
+  min[0] = minx;
+  min[1] = miny;
+  max[0] = maxx;
+  max[1] = maxy;
+}
+
+int& BoundingBox::minx() { return min[0]; }
+int& BoundingBox::miny() { return min[1]; }
+int& BoundingBox::maxx() { return max[0]; }
+int& BoundingBox::maxy() { return max[1]; }
+
 
 // bool   Ring::containsPoint(const Point2D &xy) const {
 //   unsigned int i, j;
@@ -171,6 +183,20 @@ void MultiPolygon::reverse() {
     for(unsigned int i=1;i<poly.size();i++)
       std::reverse(poly.at(i).begin(),poly.at(i).end());
   }
+}
+
+BoundingBox MultiPolygon::bbox() const {
+  BoundingBox bb;
+  for(const auto &p: *this)
+  for(const auto &r: p)
+  for(const auto &pt: r){
+    bb.minx() = std::min(bb.minx(),pt.x);
+    bb.maxx() = std::max(bb.maxx(),pt.x);
+    bb.miny() = std::min(bb.miny(),pt.y);
+    bb.maxy() = std::max(bb.maxy(),pt.y);
+  }
+
+  return bb;
 }
 
 void GeoCollection::reverse() {
