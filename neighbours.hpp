@@ -6,6 +6,7 @@
 namespace complib {
   void FindNeighbouringDistricts(GeoCollection &gc);
   void FindExteriorDistricts(GeoCollection &subunits, const GeoCollection &superunits);
+  void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits);
 }
 
 #endif
