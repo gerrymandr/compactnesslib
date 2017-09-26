@@ -49,30 +49,44 @@ void CalculateListOfBoundedScores(
   const std::string join_on,
   std::vector<std::string> score_list
 ){
-  for(const auto &mp: subunits)
-    if(!mp.props.count(join_on))
-      throw std::runtime_error("At least one subunit was missing the joining attribute!");
-
-  //A quick was to access superunits based on their key
-  std::unordered_map<std::string, const MultiPolygon *> su_key;
-  for(const auto &mp: superunits){
-    if(!mp.props.count(join_on))
-      throw std::runtime_error("At least one superunit was missing the joining attribute!");
-    if(su_key.count(mp.props.at(join_on)))
-      throw std::runtime_error("More than one superunit had the same key!");
-    su_key[mp.props.at(join_on)] = &mp;
-  }
-
   if(score_list.empty())
     score_list = getListOfBoundedScores();
   else if(score_list.size()==1 && score_list.at(0)=="all")
     score_list = getListOfBoundedScores();
 
-  for(auto& su: subunits){
-    for(const auto &sn: score_list){
-      if(bounded_score_map.count(sn))
-        su.scores[sn] = bounded_score_map.at(sn)(su,*su_key.at(su.props.at(join_on)));
+
+  if(join_on.empty() || superunits.size()==1){
+
+    for(auto& sub: subunits){
+      for(const auto &sn: score_list){
+        if(bounded_score_map.count(sn))
+          sub.scores[sn] = bounded_score_map.at(sn)(sub,superunits.at(0));
+      }
     }
+
+  } else {
+
+    for(const auto &mp: subunits)
+      if(!mp.props.count(join_on))
+        throw std::runtime_error("At least one subunit was missing the joining attribute!");
+
+    //A quick was to access superunits based on their key
+    std::unordered_map<std::string, const MultiPolygon *> su_key;
+    for(const auto &mp: superunits){
+      if(!mp.props.count(join_on))
+        throw std::runtime_error("At least one superunit was missing the joining attribute!");
+      if(su_key.count(mp.props.at(join_on)))
+        throw std::runtime_error("More than one superunit had the same key!");
+      su_key[mp.props.at(join_on)] = &mp;
+    }
+
+    for(auto& sub: subunits){
+      for(const auto &sn: score_list){
+        if(bounded_score_map.count(sn))
+          sub.scores[sn] = bounded_score_map.at(sn)(sub,*su_key.at(sub.props.at(join_on)));
+      }
+    }
+
   }
 }
 
