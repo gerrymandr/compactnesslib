@@ -329,10 +329,6 @@ double hullAreaOfHoles(const MultiPolygon &mp){
   return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+hullAreaOfHoles(p);}); 
 }
 
-double areaHoles(const Polygon &p){
-  return std::accumulate(p.begin()+1,p.end(),0.0,[](const double b, const Ring &r){ return b+area(r);});
-}
-
 unsigned holeCount(const Polygon &p){
   return p.size()-1;
 }
@@ -342,7 +338,7 @@ unsigned polyCount(const MultiPolygon &mp){
 }
 
 unsigned holeCount(const MultiPolygon &mp){
-  return std::accumulate(mp.begin(),mp.end(),0,[](const unsigned b, const Polygon &p){ return b+holeCount(p);});
+  return std::accumulate(mp.begin(), mp.end(), 0, [](const double b, const Polygon &p){ return b+holeCount(p);});
 }
 
 double diameter(const Ring &r){
@@ -367,40 +363,37 @@ double diameterOfEntireMultiPolygon(const MultiPolygon &mp){
 
 
 const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed){
-  if(!ring.clipper_paths.empty())
-    return ring.clipper_paths;
+  //if(!ring.clipper_paths.empty())
+  //  return ring.clipper_paths;
 
-  cl::Path path;
+  ring.clipper_paths.clear();
+
   if(!reversed){
     for(const auto &pt: ring)
-      path.emplace_back((long long)pt.x,(long long)pt.y);
+      ring.clipper_paths.emplace_back((long long)pt.x,(long long)pt.y);
   } else {
     for(auto pt=ring.rbegin();pt!=ring.rend();pt++)
-      path.emplace_back((long long)pt->x,(long long)pt->y);    
+      ring.clipper_paths.emplace_back((long long)pt->x,(long long)pt->y);    
   }
-
-  std::swap(ring.clipper_paths,path);
 
   return ring.clipper_paths;
 }
 
 
 const cl::Paths& ConvertToClipper(const MultiPolygon &mp, const bool reversed) {
-  if(!mp.clipper_paths.empty())
-    return mp.clipper_paths;
+  //if(!mp.clipper_paths.empty())
+  //  return mp.clipper_paths;
 
-  cl::Paths paths;
+  mp.clipper_paths.clear();
 
   for(const auto &poly: mp){
     //Send in outer perimter
-    paths.push_back(ConvertToClipper(poly.at(0), reversed));
+    mp.clipper_paths.push_back(ConvertToClipper(poly.at(0), reversed));
 
     //Send in the holes
     for(unsigned int i=1;i<poly.size();i++)
-      paths.push_back(ConvertToClipper(poly.at(i), !reversed));
+      mp.clipper_paths.push_back(ConvertToClipper(poly.at(i), !reversed));
   }
-
-  std::swap(mp.clipper_paths, paths);
 
   return mp.clipper_paths;
 }

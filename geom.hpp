@@ -83,7 +83,6 @@ class MultiPolygon {
 
   std::set<unsigned int> neighbours;
   std::set<std::pair<unsigned int, double> > parents;
-  bool exterior_child = false;
 };
 
 class GeoCollection {
