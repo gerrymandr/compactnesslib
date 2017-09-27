@@ -29,16 +29,20 @@ void PrintProps(const Props &ps);
 
 class BoundingBox {
  private:
-  static const infty = std::numeric_limits<int>::max();
+  static constexpr double infty = std::numeric_limits<double>::infinity();
  public:
-  double min[2] = {{infty,infty}};
-  double max[2] = {{-infty,-infty}};
+  double min[2] = {infty,infty};
+  double max[2] = {-infty,-infty};
   BoundingBox() = default;
-  BoundingBox(int minx, int miny, int maxx, int maxy);
+  BoundingBox(double minx, double miny, double maxx, double maxy);
   double& minx();
   double& miny();
   double& maxx();
   double& maxy();
+  double minx() const;
+  double miny() const;
+  double maxx() const;
+  double maxy() const;
 };
 
 class Point2D {
@@ -82,7 +86,7 @@ class MultiPolygon {
   EXPOSE_STL_VECTOR(v);
 
   std::set<unsigned int> neighbours;
-  std::set<std::pair<unsigned int, double> > parents;
+  std::vector<std::pair<unsigned int, double> > parents;
 };
 
 class GeoCollection {
