@@ -60,7 +60,7 @@ class Ring {
   Ring(const std::vector<Point2D> &ptvec);
   mutable std::vector<Point2D> hull;
   Ring getHull() const;
-  mutable ClipperLib::Path clipper_paths;
+  ClipperLib::Path clipper_paths;
   EXPOSE_STL_VECTOR(v);
 };
 
@@ -80,7 +80,7 @@ class MultiPolygon {
   void toRadians();
   void toDegrees();
   MultiPolygon intersect(const MultiPolygon &b) const;
-  mutable ClipperLib::Paths clipper_paths;
+  ClipperLib::Paths clipper_paths;
   void reverse();
   BoundingBox bbox() const;
   EXPOSE_STL_VECTOR(v);
@@ -95,6 +95,7 @@ class GeoCollection {
   std::string prj_str;
   void reverse();
   void correctWindingDirection();
+  void clipperify();
   EXPOSE_STL_VECTOR(v);
 };
 
@@ -137,17 +138,19 @@ unsigned polyCount(const MultiPolygon &mp);
 unsigned holeCount(const MultiPolygon &mp);
 
 
-const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed);
-const cl::Paths& ConvertToClipper(const MultiPolygon &mp, const bool reversed);
+cl::Path  ConvertToClipper(const Ring &ring, const bool reversed);
+cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed);
 
 template<class T, class U>
 double IntersectionArea(const T &a, const U &b) {
-  const auto paths_a = ConvertToClipper(a,false);
-  const auto paths_b = ConvertToClipper(b,false);
+  if(a.clipper_paths.empty())
+    throw std::runtime_error("Must precalculate clipper paths!");
+  if(b.clipper_paths.empty())
+    throw std::runtime_error("Must precalculate clipper paths!");
 
   cl::Clipper clpr;
-  clpr.AddPaths(paths_a, cl::ptSubject, true);
-  clpr.AddPaths(paths_b, cl::ptClip, true);
+  clpr.AddPaths(a.clipper_paths, cl::ptSubject, true);
+  clpr.AddPaths(b.clipper_paths, cl::ptClip, true);
   cl::Paths solution;
   clpr.Execute(cl::ctIntersection, solution, cl::pftEvenOdd, cl::pftEvenOdd);
 

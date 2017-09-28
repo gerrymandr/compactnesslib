@@ -172,7 +172,7 @@ void FindExteriorDistricts(GeoCollection &subunits, const GeoCollection &superun
 
 
 
-void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
+void CalcParentOverlap(GeoCollection &subunits, const GeoCollection &superunits){
   //Make an Rtree!
   SpIndex<double, unsigned int> sp;
 
@@ -181,7 +181,9 @@ void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
     AddToSpIndex(superunits.at(sup), sp, sup);
   sp.buildIndex();
 
-  for(auto &sub: subunits){
+  #pragma omp parallel for
+  for(unsigned int i=0;i<subunits.size();i++){
+    auto &sub = subunits.at(i);
     //Area of subunit
     const auto sub_area = areaIncludingHoles(sub);
 
