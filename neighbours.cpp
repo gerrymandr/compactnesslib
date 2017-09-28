@@ -172,7 +172,7 @@ void FindExteriorDistricts(GeoCollection &subunits, const GeoCollection &superun
 
 
 
-void CalcParentOverlap(GeoCollection &subunits, const GeoCollection &superunits){
+void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
   //Make an Rtree!
   SpIndex<double, unsigned int> sp;
 
@@ -180,6 +180,9 @@ void CalcParentOverlap(GeoCollection &subunits, const GeoCollection &superunits)
   for(unsigned int sup=0;sup<superunits.size();sup++)
     AddToSpIndex(superunits.at(sup), sp, sup);
   sp.buildIndex();
+
+  //TODO: Maybe looping over the super units and see what children they have
+  //would be faster? That might improve cache locality for the superunits
 
   #pragma omp parallel for
   for(unsigned int i=0;i<subunits.size();i++){
@@ -193,11 +196,25 @@ void CalcParentOverlap(GeoCollection &subunits, const GeoCollection &superunits)
     for(const auto &pp: potential_parents){
       auto ifrac = IntersectionArea(superunits.at(pp), sub)/sub_area;
 
-      //Round to 1 if we're close enough
+      //No overlap: not a child
+      if(ifrac==0)
+        continue;
+
+      //Child entirely within the parent. We do this because of the potential
+      //for floating-point errors.
       if(ifrac>0.997)
         ifrac = 1;
 
+      //This can be done non-critically because each sub is controlled by its
+      //own thread with no overlaps
       sub.parents.emplace_back(pp, ifrac);
+
+      //This must be done critically since more than one child might be
+      //accessing a parent at the same time
+      #pragma omp critical
+      {
+        superunits.at(pp).children.emplace_back(i,ifrac);
+      }
     }
   }
 }
