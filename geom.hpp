@@ -86,8 +86,9 @@ class MultiPolygon {
   EXPOSE_STL_VECTOR(v);
 
   std::set<unsigned int> neighbours;
-  std::vector<std::pair<unsigned int, double> > parents;
-  std::vector<std::pair<unsigned int, double> > children;
+  typedef std::pair<unsigned int, double> parent_t;
+  std::vector<parent_t> parents;
+  std::vector<parent_t> children;
 };
 
 class GeoCollection {
