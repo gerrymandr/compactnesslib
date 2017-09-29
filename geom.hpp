@@ -187,6 +187,8 @@ std::pair<Point2D, Point2D> MostDistantPoints(const T &geom){
 MultiPolygon GetBoundingCircle(const MultiPolygon &mp);
 MultiPolygon GetBoundingCircleMostDistant(const MultiPolygon &mp);
 
+cl::Paths BufferPath(const cl::Paths &paths, const int pad_amount);
+
 }
 
 #endif

@@ -70,20 +70,8 @@ double ScoreReockPTB(const MultiPolygon &mp, const MultiPolygon &border){
 
 cl::Paths GetClipperRing(const cl::Paths &unit, const int pad_amount){
   //Grow the unit
-  cl::Paths grown;
-  {
-    cl::ClipperOffset co;
-    co.AddPaths(unit, cl::jtRound, cl::etClosedPolygon);
-    co.Execute(grown, pad_amount);
-  }
-
-  //Shrink the unit
-  cl::Paths shrunk;
-  {
-    cl::ClipperOffset co;
-    co.AddPaths(unit, cl::jtRound, cl::etClosedPolygon);
-    co.Execute(shrunk, -pad_amount);
-  }
+  const auto grown  = BufferPath(unit,  pad_amount);
+  const auto shrunk = BufferPath(unit, -pad_amount);
 
   //Get a unit ring
   cl::Paths ring;
