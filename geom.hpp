@@ -200,6 +200,13 @@ MultiPolygon GetBoundingCircleMostDistant(const MultiPolygon &mp);
 
 cl::Paths BufferPath(const cl::Paths &paths, const int pad_amount);
 
+template<class T>
+cl::Paths BufferPath(const T &geom, const int pad_amount){
+  if(geom.clipper_paths.empty())
+    throw std::runtime_error("Must precalculate clipper paths!");
+  return BufferPath(geom.clipper_paths, pad_amount);
+}
+
 }
 
 #endif
