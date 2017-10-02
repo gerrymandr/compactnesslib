@@ -75,6 +75,10 @@ class MultiPolygon {
   Polygons v;
   Props props;
   Scores scores;
+  //Values greater than 0 are the guaranteed minimum distance between points as
+  //established by Densify(). Can be used to determine whether or not the MP has
+  //been densified.
+  double densified = 0; 
   mutable Ring hull;
   const Ring& getHull() const;
   void toRadians();
@@ -140,9 +144,14 @@ unsigned holeCount(const Polygon &p);
 unsigned polyCount(const MultiPolygon &mp);
 unsigned holeCount(const MultiPolygon &mp);
 
+template<class T> unsigned PointCount(const T &geom);
+template<>        unsigned pointCount(const Ring &r);
 
 cl::Paths ConvertToClipper(const Ring &ring, const bool reversed);
 cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed);
+
+void Densify(MultiPolygon &mp, double maxdist);
+
 
 template<class T, class U>
 double IntersectionArea(const T &a, const U &b) {
