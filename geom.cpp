@@ -491,8 +491,8 @@ MultiPolygon GetBoundingCircleMostDistant(const MultiPolygon &mp){
 cl::Paths BufferPath(const cl::Paths &paths, const int pad_amount){
   cl::Paths result;
   cl::ClipperOffset co;
-  //co.AddPaths(paths, cl::jtRound,  cl::etClosedPolygon);
-  co.AddPaths(paths, cl::jtSquare, cl::etClosedPolygon); //jtSquare runs about twice as fast as jtRound
+  co.AddPaths(paths, cl::jtRound,  cl::etClosedPolygon);
+  //co.AddPaths(paths, cl::jtSquare, cl::etClosedPolygon); //jtSquare runs about twice as fast as jtRound
   co.Execute(result, pad_amount);
   return result;
 }
