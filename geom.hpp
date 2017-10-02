@@ -103,6 +103,7 @@ class GeoCollection {
 
 
 
+double EuclideanDistanceSquared(const Point2D &a, const Point2D &b);
 double EuclideanDistance(const Point2D &a, const Point2D &b);
 
 
