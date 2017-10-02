@@ -156,7 +156,7 @@ void FindExteriorDistricts(
   #pragma omp parallel for
   for(unsigned int mpi=0;mpi<superunits.size();mpi++){
     //Shrink the superunit by `shrink` units
-    const auto shrunk_superunit = BufferPath(superunits.at(mpi).clipper_paths, -shrink);
+    const auto shrunk_superunit = BufferPath(superunits.at(mpi), -shrink);
 
     //const auto shrunk_superunit = superunits.at(mpi).clipper_paths;
 
