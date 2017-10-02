@@ -375,15 +375,17 @@ double diameterOfEntireMultiPolygon(const MultiPolygon &mp){
 
 
 
-cl::Path ConvertToClipper(const Ring &ring, const bool reversed){
-  cl::Path clipper_paths;
+cl::Paths ConvertToClipper(const Ring &ring, const bool reversed){
+  cl::Paths clipper_paths(1);
+
+  auto &path = clipper_paths.at(0);
 
   if(!reversed){
     for(const auto &pt: ring)
-      clipper_paths.emplace_back((long long)pt.x,(long long)pt.y);
+      path.emplace_back((long long)pt.x,(long long)pt.y);
   } else {
     for(auto pt=ring.rbegin();pt!=ring.rend();pt++)
-      clipper_paths.emplace_back((long long)pt->x,(long long)pt->y);    
+      path.emplace_back((long long)pt->x,(long long)pt->y);    
   }
 
   return clipper_paths;
@@ -395,11 +397,11 @@ cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed) {
 
   for(const auto &poly: mp){
     //Send in outer perimter
-    clipper_paths.push_back(ConvertToClipper(poly.at(0), reversed));
+    clipper_paths.push_back(ConvertToClipper(poly.at(0), reversed).front());
 
     //Send in the holes
     for(unsigned int i=1;i<poly.size();i++)
-      clipper_paths.push_back(ConvertToClipper(poly.at(i), !reversed));
+      clipper_paths.push_back(ConvertToClipper(poly.at(i), !reversed).front());
   }
 
   return clipper_paths;

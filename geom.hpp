@@ -60,7 +60,7 @@ class Ring {
   Ring(const std::vector<Point2D> &ptvec);
   mutable std::vector<Point2D> hull;
   Ring getHull() const;
-  ClipperLib::Path clipper_paths;
+  ClipperLib::Paths clipper_paths;
   EXPOSE_STL_VECTOR(v);
 };
 
@@ -141,7 +141,7 @@ unsigned polyCount(const MultiPolygon &mp);
 unsigned holeCount(const MultiPolygon &mp);
 
 
-cl::Path  ConvertToClipper(const Ring &ring, const bool reversed);
+cl::Paths ConvertToClipper(const Ring &ring, const bool reversed);
 cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed);
 
 template<class T, class U>
