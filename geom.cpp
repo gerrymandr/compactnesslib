@@ -546,18 +546,8 @@ void Densify(MultiPolygon &mp, const double maxdist){
 }
 
 template<>
-unsigned PointCount(const Ring &r){
+unsigned PointCount<Ring>(const Ring &r){
   return r.size();
-}
-
-template<class T>
-unsigned PointCount(const T &geom){
-  return std::accumulate(
-    geom.begin(),
-    geom.end(),
-    0,
-    [](const T &a, const unsigned int b){ return b+PointCount(r); }
-  );
 }
 
 }

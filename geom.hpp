@@ -9,6 +9,8 @@
 #include "Props.hpp"
 #include "lib/clipper.hpp"
 #include "lib/iterator_tpl.h"
+#include <iostream>
+#include <numeric>
 
 namespace complib {
 
@@ -144,8 +146,22 @@ unsigned holeCount(const Polygon &p);
 unsigned polyCount(const MultiPolygon &mp);
 unsigned holeCount(const MultiPolygon &mp);
 
-template<class T> unsigned PointCount(const T &geom);
-template<>        unsigned pointCount(const Ring &r);
+
+
+template<class T>
+unsigned PointCount(const T &geom){
+  return std::accumulate(
+    geom.v.begin(),
+    geom.v.end(),
+    0,
+    [](const unsigned int b, const typename decltype(geom.v)::value_type &a){ return b+PointCount(a); }
+  );
+}
+
+template<>
+unsigned PointCount<Ring>(const Ring &r);
+
+
 
 cl::Paths ConvertToClipper(const Ring &ring, const bool reversed);
 cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed);
