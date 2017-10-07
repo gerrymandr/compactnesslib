@@ -520,16 +520,16 @@ void Densify(MultiPolygon &mp, const double maxdist){
 
       //Calculate intermediate points using linear interpolation via method of
       //weighted averages
-      int    i = 0; //Which portion of the weighted average we are on - prevents build up of floating errors
-      double t = 0; //Portion of the average coming from start vs end point
+      int    si = 0; //Which portion of the weighted average we are on - prevents build up of floating errors
+      double st = 0; //Portion of the average coming from start vs end point
       do {
         densified_ring.emplace_back(
-          (1-t)*a.x + t*b.x,
-          (1-t)*a.y + t*b.y
+          (1-st)*a.x + st*b.x,
+          (1-st)*a.y + st*b.y
         );
-        i++;
-        t = i*step;
-      } while (t<1);
+        si++;
+        st = si*step;
+      } while (st<1);
 
       
     }
@@ -539,12 +539,11 @@ void Densify(MultiPolygon &mp, const double maxdist){
 
     //Replace the ring's points with the densified ring's points
     //TODO: May need to clear ring-specific pre-caching
-    std::swap(ring.v,densified_ring);
+    std::swap(ring.v,densified_ring.v);
   }
 
   mp.densified = maxdist;
 }
-
 
 template<>
 unsigned PointCount(const Ring &r){
