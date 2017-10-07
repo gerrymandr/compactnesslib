@@ -8,9 +8,9 @@ namespace complib {
 
   void FindExteriorDistricts(
     GeoCollection &subunits,
-    const GeoCollection &superunits,
-    const int shrink,                //Amount by which to shrink superunits when trying to determine their children
-    double border_dist_cutoff        //Subunits with at least one point within this distance of a superunit boundary are said to be part of the exterior set of that superunit
+    GeoCollection &superunits,
+    const double max_boundary_pt_dist, //Maximum distance between boundary points
+    const double border_dist_cutoff    //Points within at least this distance of a superunit boundary are potentially included in that superunit
   );
 
   void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits);
