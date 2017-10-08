@@ -91,9 +91,9 @@ std::vector<ValueType> SpIndex<CoordinateType, ValueType>::query(const MultiPoly
 
 
 template<class CoordinateType, class ValueType>
-void AddToSpIndex(const MultiPolygon &mp, SpIndex<CoordinateType, ValueType> &sp, const int id){
+void AddToSpIndex(const MultiPolygon &mp, SpIndex<CoordinateType, ValueType> &sp, const int id, const CoordinateType expand){
   const auto bb = mp.bbox();
-  sp.addBoxDeferred(bb.minx(), bb.miny(), bb.maxx(), bb.maxy(), id);
+  sp.addBoxDeferred(bb.minx()-expand, bb.miny()-expand, bb.maxx()+expand, bb.maxy()+expand, id);
 }
 
 }
