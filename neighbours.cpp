@@ -111,38 +111,90 @@ struct KDTreeVectorOfVectorsAdaptor {
 namespace complib {
 
 void FindNeighbouringDistricts(GeoCollection &gc){
-  const double max_neighbour_pt_dist_squared = 1000*1000; //in metres
+  const double max_neighbour_pt_dist = 1000; //in metres
+  const double max_boundary_pt_dist  = 500;
+  const double expand_bb_by          = 200;
 
-  //Point along the borders
-  typedef std::vector< std::vector<double> > my_vector_of_vectors_t;
-  std::vector< std::vector<double> > borders;
-  //Which MultiPolygon each point came from
-  std::vector<int> owner;
+  //Since a neighbour relationship is two-way, we can save time by making notes
+  //of those units for which we have already identified neighbours and avoiding
+  //repeating that work
+  std::unordered_set<unsigned int> found_neighbours;
 
-  //Load all the outer borders of the geometries into the borders point cloud
-  for(unsigned int mpi=0;mpi<gc.size();mpi++){
-    for(const auto &poly: gc.at(mpi))
-    for(const auto &pt: poly.at(0)){
+  //Add all of the units to the R*-tree so we can quickly find neighbours.
+  //Expand the bounding boxes of the units so that they will overlap if they are
+  //neighbours
+  SpIndex<double, unsigned int> gcidx;
+  for(unsigned int i=0;i<gc.size();i++)
+    AddToSpIndex(gc.at(i), gcidx, i, expand_bb_by);
+  gcidx.buildIndex();
+
+  //The algorithm relies on boundary points having a certain maximum spacing.
+  //Ensure that the boundaries meet this requirement.
+  for(auto &unit: gc)
+    Densify(unit, max_boundary_pt_dist);
+
+
+  //Loop through all of the units
+  #pragma omp parallel for
+  for(unsigned int i=0;i<gc.size();i++){
+    auto &unit = gc.at(i);
+
+    // found_neighbours.insert(i); //TODO
+
+    //Find the neighbours of the unit by overlapping bounding boxes
+    const auto neighbours = gcidx.query(unit);
+
+    //Load the border of the central unit into a point cloud
+    typedef std::vector< std::vector<double> > my_vector_of_vectors_t;
+    my_vector_of_vectors_t borders;
+    for(const auto &poly: unit)
+    for(const auto &pt: poly.at(0))
       borders.push_back(std::vector<double>({{pt.x,pt.y}}));
-      owner.push_back(mpi);
+
+    typedef KDTreeVectorOfVectorsAdaptor< my_vector_of_vectors_t, double >  my_kd_tree_t;
+    my_kd_tree_t subidx(2 /*dim*/, borders, 10 /* max leaf */ );
+    subidx.index->buildIndex();
+
+    //Loop over the neighbouring units
+    for(const auto &n: neighbours){
+      //We've already determined the neighbour relationships for unit `n`, so
+      //skip it.
+
+      //TODO
+      // if(found_neighbours.count(n)!=0)
+        // continue;
+
+      //Loop through all of the exterior points of the neighbour to see if any
+      //of the neighbours points are close to the focal unit's points. If so,
+      //the two are truly neighbours.
+      for(const auto &poly: gc.at(n))
+      for(const auto &pt: poly.at(0)){
+        const double qp[2] = {pt.x,pt.y};
+
+        //Find if the nearest neighbour to the query point, irrespective of distance
+        nanoflann::SearchParams params;
+        std::vector<std::pair<size_t, double> > temp;
+        subidx.index->radiusSearch(qp, max_neighbour_pt_dist, temp, params);
+
+        if(temp.size()>0){
+          unit.neighbours.push_back(n);
+          // gc.at(n).neighbours.push_back(i); //TODO
+          goto found_neighbour_exit_loops;
+        }
+      }
+
+      found_neighbour_exit_loops:
+      (void)1;
     }
   }
 
-  typedef KDTreeVectorOfVectorsAdaptor< my_vector_of_vectors_t, double >  my_kd_tree_t;
-  my_kd_tree_t border_idx(2 /*dim*/, borders, 10 /* max leaf */ );
-  border_idx.index->buildIndex();
-
-  //Determine which districts border each other
-  for(unsigned int i=0;i<borders.size();i++){
-    nanoflann::SearchParams params;
-    std::vector<std::pair<size_t, double> > temp;
-    border_idx.index->radiusSearch(borders[i].data(), max_neighbour_pt_dist_squared, temp, params);
-    for(const auto &sr: temp){
-      if(owner[sr.first]==owner[i])
-        continue;
-      gc[owner[sr.first]].neighbours.insert(owner[i]);
-      gc[owner[i]].neighbours.insert(owner[sr.first]);
-    }
+  for(auto &unit: gc){
+    unit.props["NEIGHNUM"]   = std::to_string(unit.neighbours.size());
+    unit.props["NEIGHBOURS"] = "";
+    for(const auto &n: unit.neighbours)
+      unit.props["NEIGHBOURS"] += std::to_string(n) + ",";
+    if(unit.neighbours.size()>0)
+      unit.props["NEIGHBOURS"].pop_back();
   }
 }
 
@@ -154,11 +206,13 @@ void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
 
   SpIndex<double, unsigned int> supidx;
 
+  //Add all the superunits to an R*-tree so we can quickly find potential
+  //children using minimum bounding boxes.
   for(unsigned int i=0;i<superunits.size();i++)
-    AddToSpIndex(superunits.at(i), supidx, i);
+    AddToSpIndex(superunits.at(i), supidx, i, 0.);
   supidx.buildIndex();
 
-
+  #pragma omp parallel for
   for(unsigned int i=0;i<subunits.size();i++){
     auto &sub = subunits.at(i);
 
@@ -183,7 +237,6 @@ void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
   //we can access it from either direction
   for(unsigned int i=0;i<subunits.size();i++){
     auto &sub = subunits.at(i);
-    sub.props["PARENTS"] = std::to_string(sub.parents.size());
     for(auto &p: subunits[i].parents)
       superunits.at(p.first).children.emplace_back(i, p.second);
   }
@@ -260,6 +313,37 @@ void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
 
     escape_extchild_search:
     (void)1;
+  }
+
+
+
+  for(auto &sub: subunits){
+    sub.props["PARENTNUM"] = std::to_string(sub.parents.size());
+    for(const auto &p: sub.parents){
+      sub.props["PARENTS"]  += std::to_string(p.first)  + ",";
+      sub.props["PARENTPR"] += std::to_string(p.second) + ",";
+    }
+    if(sub.parents.size()>0){
+      sub.props["PARENTS"].pop_back();
+      sub.props["PARENTPR"].pop_back();
+    }
+    const auto centroid = CentroidPTSH(sub);
+    sub.props["CENTROIDX"] = std::to_string(centroid.x);
+    sub.props["CENTROIDY"] = std::to_string(centroid.y);
+  }
+
+  for(auto &sup: superunits){
+    sup.props["CHILDNUM"]   = std::to_string(sup.children.size());
+    sup.props["CHILDREN"]   = "";
+    sup.props["CHILDRENPR"] = "";
+    for(const auto &c: sup.children){
+      sup.props["CHILDREN"]   += std::to_string(c.first)  + ",";
+      sup.props["CHILDRENPR"] += std::to_string(c.second) + ",";
+    }
+    if(sup.children.size()>0){
+      sup.props["CHILDREN"].pop_back();
+      sup.props["CHILDRENPR"].pop_back();
+    }
   }
 }
 
