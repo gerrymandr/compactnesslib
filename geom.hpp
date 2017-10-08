@@ -91,7 +91,7 @@ class MultiPolygon {
   BoundingBox bbox() const;
   EXPOSE_STL_VECTOR(v);
 
-  std::set<unsigned int> neighbours;
+  std::vector<unsigned int> neighbours;
   typedef std::pair<unsigned int, double> parent_t;
   std::vector<parent_t> parents;
   std::vector<parent_t> children;
