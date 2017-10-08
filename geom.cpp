@@ -550,4 +550,21 @@ unsigned PointCount<Ring>(const Ring &r){
   return r.size();
 }
 
+
+Point2D CentroidPTSH(const MultiPolygon &mp){
+  Point2D centroid(0,0);
+  unsigned int ptcount = 0;
+  for(const auto &poly: mp)
+  for(const auto &pt: poly.at(0)){
+    centroid.x += pt.x;
+    centroid.y += pt.y;
+    ptcount++;
+  }
+
+  centroid.x /= ptcount;
+  centroid.y /= ptcount;
+
+  return centroid;
+}
+
 }

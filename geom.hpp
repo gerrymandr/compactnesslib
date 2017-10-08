@@ -146,6 +146,7 @@ unsigned holeCount(const Polygon &p);
 unsigned polyCount(const MultiPolygon &mp);
 unsigned holeCount(const MultiPolygon &mp);
 
+Point2D CentroidPTSH(const MultiPolygon &mp);
 
 
 template<class T>
