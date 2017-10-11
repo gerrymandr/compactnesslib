@@ -1,7 +1,6 @@
 #ifndef _SpIndex_hpp_
 #define _SpIndex_hpp_
 
-#include <boost/geometry.hpp>
 #include <boost/geometry/index/rtree.hpp>
 #include "geom.hpp"
 
