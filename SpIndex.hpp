@@ -3,8 +3,6 @@
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/index/rtree.hpp>
-#include "Point.hpp"
-#include "Polygon.hpp"
 #include "geom.hpp"
 
 namespace complib {
@@ -20,10 +18,10 @@ class SpIndex {
   rtree_t rtree;
 
  public:
-  void addBox(const int xmin, const int ymin, const int xmax, const int ymax, const int id);
-  void addBoxDeferred(const int xmin, const int ymin, const int xmax, const int ymax, const int id);
-  int  queryPoint(const Point2D &xy) const;
-  int  queryBox(const BoundingBox &bb) const;
+  void addBox(const CoordinateType xmin, const CoordinateType ymin, const CoordinateType xmax, const CoordinateType ymax, const ValueType id);
+  void addBoxDeferred(const CoordinateType xmin, const CoordinateType ymin, const CoordinateType xmax, const CoordinateType ymax, const ValueType id);
+  std::vector<ValueType> query(const Point2D &xy) const;
+  std::vector<ValueType> query(const MultiPolygon &bb) const;
   void buildIndex();
 };
 
@@ -61,7 +59,7 @@ void SpIndex<CoordinateType, ValueType>::buildIndex(){
 template<class CoordinateType, class ValueType>
 std::vector<ValueType> SpIndex<CoordinateType, ValueType>::query(const Point2D &xy) const {
   box query_box(point(xy.x, xy.y), point(xy.x, xy.y));
-  std::vector<ValueType> result_s;
+  std::vector<value> result_s;
   rtree.query(
     boost::geometry::index::intersects(query_box),
     std::back_inserter(result_s)
@@ -78,7 +76,7 @@ template<class CoordinateType, class ValueType>
 std::vector<ValueType> SpIndex<CoordinateType, ValueType>::query(const MultiPolygon &mp) const {
   const auto bb = mp.bbox();
   box query_box(point(bb.minx(), bb.miny()), point(bb.maxx(), bb.maxy()));
-  std::vector<ValueType> result_s;
+  std::vector<value> result_s;
   rtree.query(
     boost::geometry::index::intersects(query_box),
     std::back_inserter(result_s)
