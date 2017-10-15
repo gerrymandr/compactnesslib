@@ -9,6 +9,8 @@
 #include "Props.hpp"
 #include "lib/clipper.hpp"
 #include "lib/iterator_tpl.h"
+#include <iostream>
+#include <numeric>
 
 namespace complib {
 
@@ -29,16 +31,20 @@ void PrintProps(const Props &ps);
 
 class BoundingBox {
  private:
-  static const infty = std::numeric_limits<int>::max();
+  static constexpr double infty = std::numeric_limits<double>::infinity();
  public:
-  double min[2] = {{infty,infty}};
-  double max[2] = {{-infty,-infty}};
+  double min[2] = {infty,infty};
+  double max[2] = {-infty,-infty};
   BoundingBox() = default;
-  BoundingBox(int minx, int miny, int maxx, int maxy);
+  BoundingBox(double minx, double miny, double maxx, double maxy);
   double& minx();
   double& miny();
   double& maxx();
   double& maxy();
+  double minx() const;
+  double miny() const;
+  double maxx() const;
+  double maxy() const;
 };
 
 class Point2D {
@@ -56,7 +62,7 @@ class Ring {
   Ring(const std::vector<Point2D> &ptvec);
   mutable std::vector<Point2D> hull;
   Ring getHull() const;
-  mutable ClipperLib::Path clipper_paths;
+  ClipperLib::Paths clipper_paths;
   EXPOSE_STL_VECTOR(v);
 };
 
@@ -71,18 +77,24 @@ class MultiPolygon {
   Polygons v;
   Props props;
   Scores scores;
+  //Values greater than 0 are the guaranteed minimum distance between points as
+  //established by Densify(). Can be used to determine whether or not the MP has
+  //been densified.
+  double densified = 0; 
   mutable Ring hull;
   const Ring& getHull() const;
   void toRadians();
   void toDegrees();
   MultiPolygon intersect(const MultiPolygon &b) const;
-  mutable ClipperLib::Paths clipper_paths;
+  ClipperLib::Paths clipper_paths;
   void reverse();
   BoundingBox bbox() const;
   EXPOSE_STL_VECTOR(v);
 
-  std::set<unsigned int> neighbours;
-  std::set<std::pair<unsigned int, double> > parents;
+  std::vector<unsigned int> neighbours;
+  typedef std::pair<unsigned int, double> parent_t;
+  std::vector<parent_t> parents;
+  std::vector<parent_t> children;
 };
 
 class GeoCollection {
@@ -91,11 +103,13 @@ class GeoCollection {
   std::string prj_str;
   void reverse();
   void correctWindingDirection();
+  void clipperify();
   EXPOSE_STL_VECTOR(v);
 };
 
 
 
+double EuclideanDistanceSquared(const Point2D &a, const Point2D &b);
 double EuclideanDistance(const Point2D &a, const Point2D &b);
 
 
@@ -132,18 +146,40 @@ unsigned holeCount(const Polygon &p);
 unsigned polyCount(const MultiPolygon &mp);
 unsigned holeCount(const MultiPolygon &mp);
 
+Point2D CentroidPTSH(const MultiPolygon &mp);
 
-const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed);
-const cl::Paths& ConvertToClipper(const MultiPolygon &mp, const bool reversed);
+
+template<class T>
+unsigned PointCount(const T &geom){
+  return std::accumulate(
+    geom.v.begin(),
+    geom.v.end(),
+    0,
+    [](const unsigned int b, const typename decltype(geom.v)::value_type &a){ return b+PointCount(a); }
+  );
+}
+
+template<>
+unsigned PointCount<Ring>(const Ring &r);
+
+
+
+cl::Paths ConvertToClipper(const Ring &ring, const bool reversed);
+cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed);
+
+void Densify(MultiPolygon &mp, double maxdist);
+
 
 template<class T, class U>
 double IntersectionArea(const T &a, const U &b) {
-  const auto paths_a = ConvertToClipper(a,false);
-  const auto paths_b = ConvertToClipper(b,false);
+  if(a.clipper_paths.empty())
+    throw std::runtime_error("Must precalculate clipper paths!");
+  if(b.clipper_paths.empty())
+    throw std::runtime_error("Must precalculate clipper paths!");
 
   cl::Clipper clpr;
-  clpr.AddPaths(paths_a, cl::ptSubject, true);
-  clpr.AddPaths(paths_b, cl::ptClip, true);
+  clpr.AddPaths(a.clipper_paths, cl::ptSubject, true);
+  clpr.AddPaths(b.clipper_paths, cl::ptClip, true);
   cl::Paths solution;
   clpr.Execute(cl::ctIntersection, solution, cl::pftEvenOdd, cl::pftEvenOdd);
 
@@ -178,6 +214,15 @@ std::pair<Point2D, Point2D> MostDistantPoints(const T &geom){
 
 MultiPolygon GetBoundingCircle(const MultiPolygon &mp);
 MultiPolygon GetBoundingCircleMostDistant(const MultiPolygon &mp);
+
+cl::Paths BufferPath(const cl::Paths &paths, const int pad_amount);
+
+template<class T>
+cl::Paths BufferPath(const T &geom, const int pad_amount){
+  if(geom.clipper_paths.empty())
+    throw std::runtime_error("Must precalculate clipper paths!");
+  return BufferPath(geom.clipper_paths, pad_amount);
+}
 
 }
 

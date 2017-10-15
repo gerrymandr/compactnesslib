@@ -248,7 +248,14 @@ static void WriteShapes(const GeoCollection &gc, const std::string filename){
 }
 
 
+bool IsNumeric(const std::string &str){
+  return str.find_first_not_of("0123456789-.") == std::string::npos;
+}
+
+
 DBFFieldType getType(const std::string &s){
+  if(!IsNumeric(s))
+    return FTString;
   if(s.find(".")!=std::string::npos){ //Can be a double
     try {
       std::stod(s);

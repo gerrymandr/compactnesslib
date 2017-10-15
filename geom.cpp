@@ -17,6 +17,11 @@ static const double RAD_TO_DEG = 180.0/M_PI;
 
 namespace complib {
 
+double EuclideanDistanceSquared(const Point2D &a, const Point2D &b){
+  const double xd = (a.x-b.x);
+  const double yd = (a.y-b.y);
+  return xd*xd+yd*yd;
+}
 
 double EuclideanDistance(const Point2D &a, const Point2D &b){
   const double xd = (a.x-b.x);
@@ -52,18 +57,21 @@ Point2D::Point2D(double x0, double y0) {
 }
 
 
-BoundingBox::BoundingBox(int minx, int miny, int maxx, int maxy){
+BoundingBox::BoundingBox(double minx, double miny, double maxx, double maxy){
   min[0] = minx;
   min[1] = miny;
   max[0] = maxx;
   max[1] = maxy;
 }
 
-int& BoundingBox::minx() { return min[0]; }
-int& BoundingBox::miny() { return min[1]; }
-int& BoundingBox::maxx() { return max[0]; }
-int& BoundingBox::maxy() { return max[1]; }
-
+double& BoundingBox::minx()       { return min[0]; }
+double& BoundingBox::miny()       { return min[1]; }
+double& BoundingBox::maxx()       { return max[0]; }
+double& BoundingBox::maxy()       { return max[1]; }
+double  BoundingBox::minx() const { return min[0]; }
+double  BoundingBox::miny() const { return min[1]; }
+double  BoundingBox::maxx() const { return max[0]; }
+double  BoundingBox::maxy() const { return max[1]; }
 
 // bool   Ring::containsPoint(const Point2D &xy) const {
 //   unsigned int i, j;
@@ -209,6 +217,11 @@ void GeoCollection::correctWindingDirection(){
     std::cerr<<"Reversed winding of polygons!"<<std::endl;
     reverse();
   }
+}
+
+void GeoCollection::clipperify() {
+  for(unsigned int i=0;i<v.size();i++)
+    v[i].clipper_paths = ConvertToClipper(v[i], false);
 }
 
 
@@ -362,40 +375,36 @@ double diameterOfEntireMultiPolygon(const MultiPolygon &mp){
 
 
 
-const cl::Path& ConvertToClipper(const Ring &ring, const bool reversed){
-  //if(!ring.clipper_paths.empty())
-  //  return ring.clipper_paths;
+cl::Paths ConvertToClipper(const Ring &ring, const bool reversed){
+  cl::Paths clipper_paths(1);
 
-  ring.clipper_paths.clear();
+  auto &path = clipper_paths.at(0);
 
   if(!reversed){
     for(const auto &pt: ring)
-      ring.clipper_paths.emplace_back((long long)pt.x,(long long)pt.y);
+      path.emplace_back((long long)pt.x,(long long)pt.y);
   } else {
     for(auto pt=ring.rbegin();pt!=ring.rend();pt++)
-      ring.clipper_paths.emplace_back((long long)pt->x,(long long)pt->y);    
+      path.emplace_back((long long)pt->x,(long long)pt->y);    
   }
 
-  return ring.clipper_paths;
+  return clipper_paths;
 }
 
 
-const cl::Paths& ConvertToClipper(const MultiPolygon &mp, const bool reversed) {
-  //if(!mp.clipper_paths.empty())
-  //  return mp.clipper_paths;
-
-  mp.clipper_paths.clear();
+cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed) {
+  cl::Paths clipper_paths;
 
   for(const auto &poly: mp){
     //Send in outer perimter
-    mp.clipper_paths.push_back(ConvertToClipper(poly.at(0), reversed));
+    clipper_paths.push_back(ConvertToClipper(poly.at(0), reversed).front());
 
     //Send in the holes
     for(unsigned int i=1;i<poly.size();i++)
-      mp.clipper_paths.push_back(ConvertToClipper(poly.at(i), !reversed));
+      clipper_paths.push_back(ConvertToClipper(poly.at(i), !reversed).front());
   }
 
-  return mp.clipper_paths;
+  return clipper_paths;
 }
 
 
@@ -479,6 +488,83 @@ MultiPolygon GetBoundingCircleMostDistant(const MultiPolygon &mp){
 
 
 
+cl::Paths BufferPath(const cl::Paths &paths, const int pad_amount){
+  cl::Paths result;
+  cl::ClipperOffset co;
+  co.AddPaths(paths, cl::jtRound,  cl::etClosedPolygon);
+  //co.AddPaths(paths, cl::jtSquare, cl::etClosedPolygon); //jtSquare runs about twice as fast as jtRound
+  co.Execute(result, pad_amount);
+  return result;
+}
 
+
+
+//TODO: Build tests for this
+void Densify(MultiPolygon &mp, const double maxdist){
+  if(mp.densified!=0 && mp.densified<=maxdist)
+    return;
+
+  for(auto &poly: mp)
+  for(auto &ring: poly){
+    Ring densified_ring;
+
+    //Loop over adjacent points of the ring
+    for(unsigned int i=0;i<ring.size();i++){
+      const auto &a   = ring.at(i);
+      const auto &b   = ring.at((i+1)%ring.size()); //Loop around to beginning
+      const auto dist = EuclideanDistance(a,b);
+
+      //Portion of distance between the two points taken up by maxdist - used as
+      //step size for interpolation
+      const auto step = maxdist/dist;
+
+      //Calculate intermediate points using linear interpolation via method of
+      //weighted averages
+      int    si = 0; //Which portion of the weighted average we are on - prevents build up of floating errors
+      double st = 0; //Portion of the average coming from start vs end point
+      do {
+        densified_ring.emplace_back(
+          (1-st)*a.x + st*b.x,
+          (1-st)*a.y + st*b.y
+        );
+        si++;
+        st = si*step;
+      } while (st<1);
+
+      
+    }
+
+    //Ring must start and end with same coordinate
+    densified_ring.push_back(densified_ring.front()); 
+
+    //Replace the ring's points with the densified ring's points
+    //TODO: May need to clear ring-specific pre-caching
+    std::swap(ring.v,densified_ring.v);
+  }
+
+  mp.densified = maxdist;
+}
+
+template<>
+unsigned PointCount<Ring>(const Ring &r){
+  return r.size();
+}
+
+
+Point2D CentroidPTSH(const MultiPolygon &mp){
+  Point2D centroid(0,0);
+  unsigned int ptcount = 0;
+  for(const auto &poly: mp)
+  for(const auto &pt: poly.at(0)){
+    centroid.x += pt.x;
+    centroid.y += pt.y;
+    ptcount++;
+  }
+
+  centroid.x /= ptcount;
+  centroid.y /= ptcount;
+
+  return centroid;
+}
 
 }
