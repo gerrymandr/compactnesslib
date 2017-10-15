@@ -22,8 +22,8 @@ class SpIndex {
  public:
   void addBox(const int xmin, const int ymin, const int xmax, const int ymax, const int id);
   void addBoxDeferred(const int xmin, const int ymin, const int xmax, const int ymax, const int id);
-  int  queryPoint(const Point2D &xy) const;
-  int  queryBox(const BoundingBox &bb) const;
+  int  query(const Point2D &xy) const;
+  int  query(const BoundingBox &bb) const;
   void buildIndex();
 };
 
