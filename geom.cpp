@@ -64,14 +64,21 @@ BoundingBox::BoundingBox(double minx, double miny, double maxx, double maxy){
   max[1] = maxy;
 }
 
-double& BoundingBox::minx()       { return min[0]; }
-double& BoundingBox::miny()       { return min[1]; }
-double& BoundingBox::maxx()       { return max[0]; }
-double& BoundingBox::maxy()       { return max[1]; }
-double  BoundingBox::minx() const { return min[0]; }
-double  BoundingBox::miny() const { return min[1]; }
-double  BoundingBox::maxx() const { return max[0]; }
-double  BoundingBox::maxy() const { return max[1]; }
+double& BoundingBox::xmin()       { return min[0]; }
+double& BoundingBox::ymin()       { return min[1]; }
+double& BoundingBox::xmax()       { return max[0]; }
+double& BoundingBox::ymax()       { return max[1]; }
+double  BoundingBox::xmin() const { return min[0]; }
+double  BoundingBox::ymin() const { return min[1]; }
+double  BoundingBox::xmax() const { return max[0]; }
+double  BoundingBox::ymax() const { return max[1]; }
+BoundingBox& BoundingBox::expand(const double expandby) {
+  xmin() -= expandby;
+  ymin() -= expandby;
+  xmax() += expandby;
+  ymax() += expandby;
+  return *this;
+}
 
 // bool   Ring::containsPoint(const Point2D &xy) const {
 //   unsigned int i, j;
@@ -198,10 +205,10 @@ BoundingBox MultiPolygon::bbox() const {
   for(const auto &p: *this)
   for(const auto &r: p)
   for(const auto &pt: r){
-    bb.minx() = std::min(bb.minx(),pt.x);
-    bb.maxx() = std::max(bb.maxx(),pt.x);
-    bb.miny() = std::min(bb.miny(),pt.y);
-    bb.maxy() = std::max(bb.maxy(),pt.y);
+    bb.xmin() = std::min(bb.xmin(),pt.x);
+    bb.xmax() = std::max(bb.xmax(),pt.x);
+    bb.ymin() = std::min(bb.ymin(),pt.y);
+    bb.ymax() = std::max(bb.ymax(),pt.y);
   }
 
   return bb;

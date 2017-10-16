@@ -123,7 +123,7 @@ void FindNeighbouringDistricts(GeoCollection &gc){
   //Add all of the units to the R*-tree so we can quickly find neighbours.
   //Expand the bounding boxes of the units so that they will overlap if they are
   //neighbours
-  SpIndex<double, unsigned int> gcidx;
+  SpIndex gcidx;
   for(unsigned int i=0;i<gc.size();i++)
     AddToSpIndex(gc.at(i), gcidx, i, expand_bb_by);
   gcidx.buildIndex();
@@ -204,7 +204,7 @@ void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
   const double not_parent_thresh    = 0.997;
   const double max_boundary_pt_dist = 500;
 
-  SpIndex<double, unsigned int> supidx;
+  SpIndex supidx;
 
   //Add all the superunits to an R*-tree so we can quickly find potential
   //children using minimum bounding boxes.
@@ -285,7 +285,7 @@ void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
   border_idx.index->buildIndex();
   std::cerr<<"done."<<std::endl;
 
-  #pragma omp parallel for
+  #pragma omp parallel for default(none) shared(subunits, border_idx)
   for(unsigned int subi=0;subi<subunits.size();subi++){
     //Alias the current subunit
     auto &sub = subunits[subi];

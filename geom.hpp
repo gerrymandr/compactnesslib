@@ -37,14 +37,15 @@ class BoundingBox {
   double max[2] = {-infty,-infty};
   BoundingBox() = default;
   BoundingBox(double minx, double miny, double maxx, double maxy);
-  double& minx();
-  double& miny();
-  double& maxx();
-  double& maxy();
-  double minx() const;
-  double miny() const;
-  double maxx() const;
-  double maxy() const;
+  double& xmin();
+  double& ymin();
+  double& xmax();
+  double& ymax();
+  double xmin() const;
+  double ymin() const;
+  double xmax() const;
+  double ymax() const;
+  BoundingBox& expand(const double expandby);
 };
 
 class Point2D {
