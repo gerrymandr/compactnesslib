@@ -506,52 +506,6 @@ cl::Paths BufferPath(const cl::Paths &paths, const int pad_amount){
 
 
 
-//TODO: Build tests for this
-void Densify(MultiPolygon &mp, const double maxdist){
-  if(mp.densified!=0 && mp.densified<=maxdist)
-    return;
-
-  for(auto &poly: mp)
-  for(auto &ring: poly){
-    Ring densified_ring;
-
-    //Loop over adjacent points of the ring
-    for(unsigned int i=0;i<ring.size();i++){
-      const auto &a   = ring.at(i);
-      const auto &b   = ring.at((i+1)%ring.size()); //Loop around to beginning
-      const auto dist = EuclideanDistance(a,b);
-
-      //Portion of distance between the two points taken up by maxdist - used as
-      //step size for interpolation
-      const auto step = maxdist/dist;
-
-      //Calculate intermediate points using linear interpolation via method of
-      //weighted averages
-      int    si = 0; //Which portion of the weighted average we are on - prevents build up of floating errors
-      double st = 0; //Portion of the average coming from start vs end point
-      do {
-        densified_ring.emplace_back(
-          (1-st)*a.x + st*b.x,
-          (1-st)*a.y + st*b.y
-        );
-        si++;
-        st = si*step;
-      } while (st<1);
-
-      
-    }
-
-    //Ring must start and end with same coordinate
-    densified_ring.push_back(densified_ring.front()); 
-
-    //Replace the ring's points with the densified ring's points
-    //TODO: May need to clear ring-specific pre-caching
-    std::swap(ring.v,densified_ring.v);
-  }
-
-  mp.densified = maxdist;
-}
-
 template<>
 unsigned PointCount<Ring>(const Ring &r){
   return r.size();

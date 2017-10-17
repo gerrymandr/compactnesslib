@@ -6,25 +6,56 @@
 #include <unordered_map>
 #include <unordered_set>
 
-//Loop through vector, remove elements not present in set
-void VectorIntersect(std::vector<unsigned int> &vec, const std::unordered_set<unsigned int> &set){
-  for(auto i=vec.begin();i!=vec.end();){
-    if(set.count(*i)==0)
-      i = vec.erase(i);
-    else
-      i++;
+namespace complib {
+
+
+typedef std::vector<double>               pointdimvec_t;
+typedef std::vector<pointdimvec_t>        pointvec_t;
+typedef std::vector<unsigned int>         ownervec_t;
+typedef std::pair<ownervec_t, pointvec_t> owner_point_vec_t;
+
+
+
+owner_point_vec_t GetDensifiedBorders(const GeoCollection &gc, const double maxdist){
+  owner_point_vec_t temp;
+
+  //Load all the unit's points into a vector that will be loaded into a kd- tree
+  //for quick nearest-neighbour lookups
+  for(unsigned int mpi=0;mpi<gc.size();mpi++){
+    //Loop through all of the points of the superunit
+    for(const auto &poly: gc.at(mpi))
+    for(const auto &ring: poly)
+    for(unsigned int i=0;i<ring.size();i++){
+      const auto &a   = ring.at(i);
+      const auto &b   = ring.at((i+1)%ring.size()); //Loop around to beginning
+      const auto dist = EuclideanDistance(a,b);
+
+      //Portion of distance between the two points taken up by maxdist - used as
+      //step size for interpolation
+      const auto step = maxdist/dist;
+
+      //Calculate intermediate points using linear interpolation via method of
+      //weighted averages
+      int    si = 0; //Which portion of the weighted average we are on - prevents build up of floating errors
+      double st = 0; //Portion of the average coming from start vs end point
+      do {
+        temp.first.emplace_back(mpi);
+        temp.second.emplace_back(pointdimvec_t{
+          (1-st)*a.x + st*b.x,
+          (1-st)*a.y + st*b.y
+        });
+        si++;
+        st = si*step;
+      } while (st<1);
+
+      temp.first.emplace_back(mpi);
+    }
   }
+
+  return temp;
 }
 
-//Loop through vector, remove elements not present in set
-void VectorIntersect(std::vector<unsigned int> &vec, const unsigned int set){
-  for(auto i=vec.begin();i!=vec.end();){
-    if(*i!=set)
-      i = vec.erase(i);
-    else
-      i++;
-  }
-}
+
 
 ///////////////////////////////////////////////////////////
 //The following is copied verbatim from a nanoflann example
@@ -107,14 +138,12 @@ struct KDTreeVectorOfVectorsAdaptor {
 //////////////////////////////////////////////////////////////////
 //Okay, back to my stuff
 
-
-namespace complib {
-
-void FindNeighbouringDistricts(GeoCollection &gc){
-  const double max_neighbour_pt_dist = 1000; //in metres
-  const double max_boundary_pt_dist  = 500;
-  const double expand_bb_by          = 200;
-
+void FindNeighbouringDistricts(
+  GeoCollection &gc,  
+  const double max_neighbour_pt_dist,     ///< Distance within which a units are considered to be neighbours.
+  const double max_boundary_pt_dist,      ///< Maximum distance between points on densified boundaries.
+  const double expand_bb_by               ///< Distance by which units' bounding boxes are expanded. Only districts with overlapping boxes are checked for neighbourness. Value should be >0.
+){
   //Since a neighbour relationship is two-way, we can save time by making notes
   //of those units for which we have already identified neighbours and avoiding
   //repeating that work
@@ -123,6 +152,7 @@ void FindNeighbouringDistricts(GeoCollection &gc){
   //Add all of the units to the R*-tree so we can quickly find neighbours.
   //Expand the bounding boxes of the units so that they will overlap if they are
   //neighbours
+  std::cerr<<"Creating R*-tree..."<<std::endl;
   SpIndex gcidx;
   for(unsigned int i=0;i<gc.size();i++)
     AddToSpIndex(gc.at(i), gcidx, i, expand_bb_by);
@@ -130,9 +160,8 @@ void FindNeighbouringDistricts(GeoCollection &gc){
 
   //The algorithm relies on boundary points having a certain maximum spacing.
   //Ensure that the boundaries meet this requirement.
-  for(auto &unit: gc)
-    Densify(unit, max_boundary_pt_dist);
-
+  std::cerr<<"Densifying borders..."<<std::endl;
+  const auto densified_borders = GetDensifiedBorders(gc, max_boundary_pt_dist);
 
   //Loop through all of the units
   #pragma omp parallel for
@@ -145,16 +174,12 @@ void FindNeighbouringDistricts(GeoCollection &gc){
     const auto neighbours = gcidx.query(unit);
 
     //Load the border of the central unit into a point cloud
-    typedef std::vector< std::vector<double> > my_vector_of_vectors_t;
-    my_vector_of_vectors_t borders;
-    for(const auto &poly: unit)
-    for(const auto &pt: poly.at(0))
-      borders.push_back(std::vector<double>({{pt.x,pt.y}}));
-
-    typedef KDTreeVectorOfVectorsAdaptor< my_vector_of_vectors_t, double >  my_kd_tree_t;
-    my_kd_tree_t subidx(2 /*dim*/, borders, 10 /* max leaf */ );
+    std::cerr<<"Creating kd-tree..."<<std::endl;
+    typedef KDTreeVectorOfVectorsAdaptor< pointvec_t, double >  my_kd_tree_t;
+    my_kd_tree_t subidx(2 /*dim*/, densified_borders.second, 10 /* max leaf */ );
     subidx.index->buildIndex();
 
+    std::cerr<<"Determining neighbourness..."<<std::endl;
     //Loop over the neighbouring units
     for(const auto &n: neighbours){
       //We've already determined the neighbour relationships for unit `n`, so
@@ -171,12 +196,15 @@ void FindNeighbouringDistricts(GeoCollection &gc){
       for(const auto &pt: poly.at(0)){
         const double qp[2] = {pt.x,pt.y};
 
-        //Find if the nearest neighbour to the query point, irrespective of distance
-        nanoflann::SearchParams params;
-        std::vector<std::pair<size_t, double> > temp;
-        subidx.index->radiusSearch(qp, max_neighbour_pt_dist, temp, params);
+        //Find the nearest neighbour to the query point, irrespective of distance
+        const size_t num_results = 1; //Number of nearest neighbours to find
+        size_t nn_index;              //Index of the point that's been found
+        double nn_dist_sqr;           //Squared distance to the point
+        nanoflann::KNNResultSet<double> resultSet(num_results);
+        resultSet.init(&nn_index, &nn_dist_sqr);
+        subidx.index->findNeighbors(resultSet, &qp[0], nanoflann::SearchParams(10));
 
-        if(temp.size()>0){
+        if(nn_dist_sqr<max_neighbour_pt_dist*max_neighbour_pt_dist){
           unit.neighbours.push_back(n);
           // gc.at(n).neighbours.push_back(i); //TODO
           goto found_neighbour_exit_loops;
@@ -200,10 +228,14 @@ void FindNeighbouringDistricts(GeoCollection &gc){
 
 
 
-void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
-  const double not_parent_thresh    = 0.997;
-  const double max_boundary_pt_dist = 500;
-
+void CalcParentOverlap(
+  GeoCollection &subunits,
+  GeoCollection &superunits,
+  const double complete_inclusion_thresh, ///< A subunit with more fractional area than this in the parent are 100% included, all other potential parents are ignored
+  const double not_included_thresh,       ///< A subunit with less fractional area than this in a parent disregards that parent
+  const double max_boundary_pt_dist,      ///< Maximum distance between points on densified boundaries.
+  const double edge_adjacency_dist        ///< Distance within which a subunit is considered to be on the border of a superunit.
+){
   SpIndex supidx;
 
   //Add all the superunits to an R*-tree so we can quickly find potential
@@ -223,11 +255,11 @@ void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
     for(auto &p: parents){
       const double iarea = IntersectionArea(sub, superunits.at(p));
       const double frac  = iarea/area;
-      if(frac>0.997){
+      if(frac>complete_inclusion_thresh){
         sub.parents.clear();
         sub.parents.emplace_back(p, 1);
         break;
-      } else if(frac>0.003){
+      } else if(frac>not_included_thresh){
         sub.parents.emplace_back(p, frac);
       }
     }
@@ -236,7 +268,6 @@ void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
   //Make sure that the parents all have the same information as the children so
   //we can access it from either direction
   for(unsigned int i=0;i<subunits.size();i++){
-    auto &sub = subunits.at(i);
     for(auto &p: subunits[i].parents)
       superunits.at(p.first).children.emplace_back(i, p.second);
   }
@@ -250,37 +281,13 @@ void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
 
   //The algorithm relies on boundary points having a certain maximum spacing.
   //Ensure that the boundaries meet this requirement.
-  for(auto &sup: superunits)
-    Densify(sup, max_boundary_pt_dist);
-
-  for(auto &sub: subunits)
-    Densify(sub, max_boundary_pt_dist);
-
-  typedef std::vector< std::vector<double> > my_vector_of_vectors_t;
-
-  //Vector which will contain all of the border points of the superunits. Later,
-  //we'll dump them into a kd-tree. This allows us to rapidly build an index.
-  std::vector< std::vector<double> > borders; //TODO: Data type
-  //Which MultiPolygon each point came from
-  std::vector<int> owner;
-
-  //Load all the super unit points into a vector that will be loaded into a kd-
-  //tree for quick nearest-neighbour lookups
-  for(unsigned int mpi=0;mpi<superunits.size();mpi++){
-    //Loop through all of the points of the superunit
-    for(const auto &poly: superunits.at(mpi))
-    for(const auto &ring: poly)
-    for(const auto &pt: ring){
-      //Add this point to the vector of border points
-      borders.push_back(std::vector<double>({{pt.x,pt.y}}));
-      owner.push_back(mpi);
-    }
-  }
+  const auto sup_densified_borders = GetDensifiedBorders(superunits, max_boundary_pt_dist);
+  const auto sub_densified_borders = GetDensifiedBorders(subunits,   max_boundary_pt_dist);
 
   //kdtree that will be used to provide rapid nearest neighbour lookups among
   //the points which belong to the borders of the superunits
-  typedef KDTreeVectorOfVectorsAdaptor< my_vector_of_vectors_t, double >  my_kd_tree_t;
-  my_kd_tree_t border_idx(2 /*dim*/, borders, 10 /* max leaf */ );
+  typedef KDTreeVectorOfVectorsAdaptor< pointvec_t, double >  my_kd_tree_t;
+  my_kd_tree_t border_idx(2 /*dim*/, sup_densified_borders.second, 10 /* max leaf */ );
   std::cerr<<"Constructing kd-tree..."<<std::endl;
   border_idx.index->buildIndex();
   std::cerr<<"done."<<std::endl;
@@ -291,21 +298,16 @@ void CalcParentOverlap(GeoCollection &subunits, GeoCollection &superunits){
     auto &sub = subunits[subi];
 
     //Loop through all of the points in the subunit
-    for(const auto &poly: sub.v)
-    for(const auto &ring: poly)
-    for(const auto &pt: ring){
-      //One of the boundary points of a subunit
-      const double qp[2] = {pt.x,pt.y};
-
+    for(const auto &pt: sub_densified_borders.second){
       //Find the nearest neighbour to the query point, irrespective of distance
       const size_t num_results = 1; //Number of nearest neighbours to find
-      size_t nn_index;              //Index of the  point that's been found
+      size_t nn_index;              //Index of the point that's been found
       double nn_dist_sqr;           //Squared distance to the point
       nanoflann::KNNResultSet<double> resultSet(num_results);
       resultSet.init(&nn_index, &nn_dist_sqr);
-      border_idx.index->findNeighbors(resultSet, &qp[0], nanoflann::SearchParams(10));
+      border_idx.index->findNeighbors(resultSet, pt.data(), nanoflann::SearchParams(10));
 
-      if(nn_dist_sqr<2000*2000){
+      if(nn_dist_sqr<edge_adjacency_dist*edge_adjacency_dist){
         sub.props["EXTCHILD"] = "T";
         goto escape_extchild_search;
       }

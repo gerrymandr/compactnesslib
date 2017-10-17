@@ -168,8 +168,6 @@ unsigned PointCount<Ring>(const Ring &r);
 cl::Paths ConvertToClipper(const Ring &ring, const bool reversed);
 cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed);
 
-void Densify(MultiPolygon &mp, double maxdist);
-
 
 template<class T, class U>
 double IntersectionArea(const T &a, const U &b) {
