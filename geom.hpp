@@ -223,6 +223,11 @@ cl::Paths BufferPath(const T &geom, const int pad_amount){
   return BufferPath(geom.clipper_paths, pad_amount);
 }
 
+double SegmentSegmentDistanceSquared(
+  const Point2D &a1, const Point2D &a2,
+  const Point2D &b1, const Point2D &b2
+);
+
 }
 
 #endif
