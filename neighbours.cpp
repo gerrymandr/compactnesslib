@@ -158,26 +158,15 @@ void FindNeighbouringDistricts(
     AddToSpIndex(gc.at(i), gcidx, i, expand_bb_by);
   gcidx.buildIndex();
 
-  //The algorithm relies on boundary points having a certain maximum spacing.
-  //Ensure that the boundaries meet this requirement.
-  std::cerr<<"Densifying borders..."<<std::endl;
-  const auto densified_borders = GetDensifiedBorders(gc, max_boundary_pt_dist);
-
   //Loop through all of the units
   #pragma omp parallel for
-  for(unsigned int i=0;i<gc.size();i++){
-    auto &unit = gc.at(i);
+  for(unsigned int gci=0;gci<gc.size();gci++){
+    auto &unit = gc.at(gci);
 
     // found_neighbours.insert(i); //TODO
 
     //Find the neighbours of the unit by overlapping bounding boxes
     const auto neighbours = gcidx.query(unit);
-
-    //Load the border of the central unit into a point cloud
-    std::cerr<<"Creating kd-tree..."<<std::endl;
-    typedef KDTreeVectorOfVectorsAdaptor< pointvec_t, double >  my_kd_tree_t;
-    my_kd_tree_t subidx(2 /*dim*/, densified_borders.second, 10 /* max leaf */ );
-    subidx.index->buildIndex();
 
     std::cerr<<"Determining neighbourness..."<<std::endl;
     //Loop over the neighbouring units
@@ -185,30 +174,21 @@ void FindNeighbouringDistricts(
       //We've already determined the neighbour relationships for unit `n`, so
       //skip it.
 
-      //TODO
-      // if(found_neighbours.count(n)!=0)
-        // continue;
-
-      //Loop through all of the exterior points of the neighbour to see if any
-      //of the neighbours points are close to the focal unit's points. If so,
-      //the two are truly neighbours.
-      for(const auto &poly: gc.at(n))
-      for(const auto &pt: poly.at(0)){
-        const double qp[2] = {pt.x,pt.y};
-
-        //Find the nearest neighbour to the query point, irrespective of distance
-        const size_t num_results = 1; //Number of nearest neighbours to find
-        size_t nn_index;              //Index of the point that's been found
-        double nn_dist_sqr;           //Squared distance to the point
-        nanoflann::KNNResultSet<double> resultSet(num_results);
-        resultSet.init(&nn_index, &nn_dist_sqr);
-        subidx.index->findNeighbors(resultSet, &qp[0], nanoflann::SearchParams(10));
-
-        if(nn_dist_sqr<max_neighbour_pt_dist*max_neighbour_pt_dist){
-          unit.neighbours.push_back(n);
-          // gc.at(n).neighbours.push_back(i); //TODO
+      //Loop over points of the superunit
+      for(const auto &poly1: gc.at(gci))
+      for(const auto &ring1: poly1)
+      for(unsigned int i1=0;i1<ring1.size();i1++)
+      //Loop over points of the subunit
+      for(const auto &poly2: gc.at(n))
+      for(const auto &ring2: poly2)
+      for(unsigned int i2=0;i2<ring2.size();i2++){
+        if(SegmentSegmentDistanceSquared(
+          ring1.at(i1),
+          ring1.at((i1+1)%ring1.size()),
+          ring2.at(i2),
+          ring2.at((i2+1)%ring2.size())
+        )<max_neighbour_pt_dist*max_neighbour_pt_dist)
           goto found_neighbour_exit_loops;
-        }
       }
 
       found_neighbour_exit_loops:
