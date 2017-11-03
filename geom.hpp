@@ -46,6 +46,8 @@ class BoundingBox {
   double xmax() const;
   double ymax() const;
   BoundingBox& expand(const double expandby);
+  //Combine bounding boxes into a large one
+  BoundingBox operator+(const BoundingBox &b) const;
 };
 
 class Point2D {
@@ -55,6 +57,8 @@ class Point2D {
   Point2D() = default;
   Point2D(double x0, double y0);
 };
+
+typedef std::pair<Point2D,Point2D> Segment;
 
 class Ring {
  public:

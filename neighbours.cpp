@@ -15,6 +15,159 @@ typedef std::vector<unsigned int>         ownervec_t;
 typedef std::pair<ownervec_t, pointvec_t> owner_point_vec_t;
 
 
+class SegmentGrid {
+ private:
+  std::vector<Segment> segments;
+  typedef std::vector<Segment*> segrefvec;
+
+  class Cell {
+   public:
+    segrefvec red;               //List of red segments which overlap cell
+    segrefvec blue;              //List of blue segments which overlap cell
+  };
+
+  //The grid. We assume that the data is sparse, since we are dealing with
+  //polygons, and, therefore, use an unordered_map
+  std::unordered_map<int, Cell> cells;
+
+  double xmin;                   //Minimum x-coordinate of grid
+  double ymin;                   //Minimum y-coordinate of grid
+  double xmax;                   //Maximum x-coordinate of grid
+  double ymax;                   //Maximum x-coordinate of grid
+  double cellsize;               //Width & Height of a grid cell
+  int    width;                  //Width of grid measured in cells
+  int    height;                 //Height of grid measured in cells
+  mutable int segcomp_count = 0; //Number of segment-segment comparisons
+
+  bool doTheseVecsHaveSegmentInEpsilon(
+    const segrefvec &veca,
+    const segrefvec &vecb,
+    const double epsilon
+  ) const {
+    if(veca.size()==0 || vecb.size()==0)
+      return false;
+
+    for(const auto &a: veca)
+    for(const auto &b: vecb){
+      segcomp_count++;
+      const auto dist = SegmentSegmentDistanceSquared(
+        a->first,
+        a->second,
+        b->first,
+        b->second
+      );
+      if(dist<=epsilon)
+        return true;
+    }
+
+    return false;
+  }
+
+ public:
+  SegmentGrid() = default;
+
+  SegmentGrid(const double xmin0, const double ymin0, const double xmax0, const double ymax0, const double cellsize0){
+    xmin     = xmin0;
+    ymin     = ymin0;
+    xmax     = xmax0;
+    ymax     = ymax0;
+    cellsize = cellsize0;
+
+    //Round up! Otherwise a segment end-point may fall off the grid.
+    width    = std::ceil((xmax-xmin)/cellsize);
+    height   = std::ceil((ymax-ymin)/cellsize);
+  }
+
+  void addSegment(
+    const Point2D &a,  //End point of segment
+    const Point2D &b,  //End point of segment
+    const bool red     //True => red; otherwise => blue
+  ){
+    //Get coordinates of cells
+    const int ax = (a.x-xmin)/cellsize;
+    const int ay = (a.y-ymin)/cellsize;
+    const int bx = (b.x-xmin)/cellsize;
+    const int by = (b.y-ymin)/cellsize;
+
+    if(std::abs(ax-bx)>=2 || std::abs(ay-by)>=2)
+      throw std::runtime_error("Segment endpoints are not in adjacent cells!");
+
+    //Get cell addresses
+    const int acelli = ay*width+ax;
+    const int bcelli = by*width+bx;
+
+    //Insert cells if not already present, get refernces to the cells
+    Cell& acell = cells.emplace(acelli, Cell()).first->second; //.first is the map object (<int,Cell>), .second is the cell
+    Cell& bcell = cells.emplace(bcelli, Cell()).first->second; //.first is the map object (<int,Cell>), .second is the cell
+
+    segments.emplace_back(a,b);
+
+    //Make note of which colours are present in the cell
+    if(red){
+      acell.red.emplace_back ( &segments[segments.size()-1] );  
+      bcell.red.emplace_back ( &segments[segments.size()-1] );  
+    } else {
+      acell.blue.emplace_back( &segments[segments.size()-1] ); 
+      bcell.blue.emplace_back( &segments[segments.size()-1] ); 
+    }
+  }
+
+  bool areThereSegmentsWithinEpsilon(const double epsilon) const {
+    const int dx[9] = {0, -1, -1,  0,  1, 1, 1, 0, -1}; // x offsets of D8 neighbours, from a central cell
+    const int dy[9] = {0,  0, -1, -1, -1, 0, 1, 1,  1}; // y offsets of D8 neighbours, from a central cell
+
+    //Iterate through cells
+    for(const auto &kv: cells){
+      const auto idx    = kv.first;                 //Index of current central cell
+      const auto& ccell = kv.second;                //The current central cell
+
+      const auto cy = idx/height;                   //y-coordinate of central cell
+      const auto cx = idx%height;                   //x-coordinate of central cell
+
+      //Loop through neighbours
+      for(int n=0;n<=8;n++){
+        const auto nx = cx+dx[n];                   //x-coordinate of neighbour
+        const auto ny = cy+dy[n];                   //y-coordinate of neighbour
+
+        if(nx<0 || ny<0 || nx==width || ny==height) //Is cell outside grid bounds?
+          continue;                                 //Yep
+
+        const int nidx = ny*width+nx;               //Index of neighbour cell
+
+        if(!cells.count(nidx))                      //Does this cell exist?
+          continue;                                 //Nope
+
+        const auto& ncell = cells.at(nidx);
+
+        if(doTheseVecsHaveSegmentInEpsilon(ccell.red,  ncell.blue, epsilon))
+          return true;
+        if(doTheseVecsHaveSegmentInEpsilon(ccell.blue, ncell.red,  epsilon))
+          return true;
+      }
+    }
+
+    return false;
+  }
+
+  int sizeBlue() const {
+    int sum = 0;
+    for(const auto &kv: cells)
+      sum += kv.second.blue.size();
+    return sum;
+  }
+
+  int sizeRed() const {
+    int sum = 0;
+    for(const auto &kv: cells)
+      sum += kv.second.red.size();
+    return sum;
+  }
+
+  int numSegSegComparisons() const {
+    return segcomp_count;
+  }
+};
+
 
 owner_point_vec_t GetDensifiedBorders(const GeoCollection &gc, const double maxdist){
   owner_point_vec_t temp;
@@ -44,6 +197,49 @@ owner_point_vec_t GetDensifiedBorders(const GeoCollection &gc, const double maxd
           (1-st)*a.x + st*b.x,
           (1-st)*a.y + st*b.y
         });
+        si++;
+        st = si*step;
+      } while (st<1);
+
+      temp.first.emplace_back(mpi);
+    }
+  }
+
+  return temp;
+}
+
+
+
+std::vector<Segment> GetDensifiedBorderSegments(const GeoCollection &gc, const double maxdist){
+  std::vector<Segment> temp;
+
+  //Load all the unit's points into a vector that will be loaded into a kd- tree
+  //for quick nearest-neighbour lookups
+  for(unsigned int mpi=0;mpi<gc.size();mpi++){
+    //Loop through all of the points of the superunit
+    for(const auto &poly: gc.at(mpi))
+    for(const auto &ring: poly)
+    for(unsigned int i=0;i<ring.size();i++){
+      const auto &a   = ring.at(i);
+      const auto &b   = ring.at((i+1)%ring.size()); //Loop around to beginning
+      const auto dist = EuclideanDistance(a,b);
+
+      //Portion of distance between the two points taken up by maxdist - used as
+      //step size for interpolation
+      const auto step = maxdist/dist;
+
+      //Calculate intermediate points using linear interpolation via method of
+      //weighted averages
+      int    si = 0; //Which portion of the weighted average we are on - prevents build up of floating errors
+      double st = 0; //Portion of the average coming from start vs end point
+
+      Point2D pta = a;
+      do {
+        Point2D ptb(
+          (1-st)*a.x + st*b.x,
+          (1-st)*a.y + st*b.y
+        );
+        Segment(pta,ptb)
         si++;
         st = si*step;
       } while (st<1);
@@ -163,6 +359,8 @@ void FindNeighbouringDistricts(
   for(unsigned int gci=0;gci<gc.size();gci++){
     auto &unit = gc.at(gci);
 
+    const auto this_bb = unit.bbox();
+
     // found_neighbours.insert(i); //TODO
 
     //Find the neighbours of the unit by overlapping bounding boxes
@@ -171,28 +369,43 @@ void FindNeighbouringDistricts(
     std::cerr<<"Determining neighbourness..."<<std::endl;
     //Loop over the neighbouring units
     for(const auto &n: neighbours){
+      auto &nunit = gc.at(n);
+
       //We've already determined the neighbour relationships for unit `n`, so
       //skip it.
+      //TODO
 
-      //Loop over points of the superunit
-      for(const auto &poly1: gc.at(gci))
-      for(const auto &ring1: poly1)
-      for(unsigned int i1=0;i1<ring1.size();i1++)
-      //Loop over points of the subunit
-      for(const auto &poly2: gc.at(n))
-      for(const auto &ring2: poly2)
-      for(unsigned int i2=0;i2<ring2.size();i2++){
-        if(SegmentSegmentDistanceSquared(
-          ring1.at(i1),
-          ring1.at((i1+1)%ring1.size()),
-          ring2.at(i2),
-          ring2.at((i2+1)%ring2.size())
-        )<max_neighbour_pt_dist*max_neighbour_pt_dist)
-          goto found_neighbour_exit_loops;
-      }
+      const auto bbn = nunit.bbox();
 
-      found_neighbour_exit_loops:
-      (void)1;
+      const auto combined_bbox = this_bb+bbn;
+
+      //Segment grid for quick minimal-distance calculation
+      SegmentGrid sg(
+        combined_bbox.xmin(),
+        combined_bbox.ymin(),
+        combined_bbox.xmax(),
+        combined_bbox.ymax(),
+        max_neighbour_pt_dist        
+      );
+
+      //Lambda to add points to the segment grid
+      const auto add_points = [&](const MultiPolygon &mp, const bool red){
+        //Loop over points of the superunit
+        for(const auto &poly1: mp)
+        for(const auto &ring1: poly1)
+        for(unsigned int i1=0;i1<ring1.size();i1++)
+          sg.addSegment( ring1.at(i1), ring1.at((i1+1)%ring1.size()), red);
+      };
+
+      //Add points from both MultiPolygons. Arbitrarily call one red and the
+      //other blue
+      add_points(unit,  true );
+      add_points(nunit, false);
+
+      if(sg.areThereSegmentsWithinEpsilon(max_neighbour_pt_dist))
+        unit.neighbours.push_back(n);
+
+      std::cout<<"Blue="<<sg.sizeBlue()<<", Red="<<sg.sizeRed()<<", total="<<(sg.sizeBlue()+sg.sizeRed())<<", comparisons="<<sg.numSegSegComparisons()<<std::endl;
     }
   }
 
