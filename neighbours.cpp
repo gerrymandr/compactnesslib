@@ -6,6 +6,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
+//TODO
+#include <iostream>
+#include <iomanip>
+
 namespace complib {
 
 
@@ -76,6 +80,10 @@ class SegmentGrid {
     //Round up! Otherwise a segment end-point may fall off the grid.
     width    = std::ceil((xmax-xmin)/cellsize);
     height   = std::ceil((ymax-ymin)/cellsize);
+
+    //Set hash table size to initially 10% of full size, based on some
+    //experiments
+    cells.reserve(width*height/10);
   }
 
   void addSegment(
@@ -110,6 +118,10 @@ class SegmentGrid {
       acell.blue.emplace_back( &segments[segments.size()-1] ); 
       bcell.blue.emplace_back( &segments[segments.size()-1] ); 
     }
+  }
+
+  void addSegment(const Segment &seg, const bool red){
+    addSegment(seg.first, seg.second, red);
   }
 
   bool areThereSegmentsWithinEpsilon(const double epsilon) const {
@@ -163,8 +175,36 @@ class SegmentGrid {
     return sum;
   }
 
+  int sizeCells() const {
+    return cells.size();
+  }
+
+  int getWidth() const {
+    return width;
+  }
+
+  int getHeight() const {
+    return height;
+  }
+
   int numSegSegComparisons() const {
     return segcomp_count;
+  }
+
+  void printCellCounts() const {
+    for(int y=0;y<height;y++){
+      for(int x=0;x<width;x++){
+        const int c = y*width+x;
+        if(cells.count(c)){
+          const auto &cell = cells.at(c);
+          std::cout<<std::setw(5)<<(cell.red.size()+cell.blue.size())<<" ";
+        } else {
+          std::cout<<std::setw(5)<<"0"<<" ";
+        }
+      }
+      std::cout<<"\n";
+    }
+    std::cout<<"\n";
   }
 };
 
@@ -210,44 +250,54 @@ owner_point_vec_t GetDensifiedBorders(const GeoCollection &gc, const double maxd
 
 
 
-std::vector<Segment> GetDensifiedBorderSegments(const GeoCollection &gc, const double maxdist){
+std::vector<Segment> GetDensifiedBorderSegments(const MultiPolygon &mp, const double maxdist){
   std::vector<Segment> temp;
 
-  //Load all the unit's points into a vector that will be loaded into a kd- tree
-  //for quick nearest-neighbour lookups
-  for(unsigned int mpi=0;mpi<gc.size();mpi++){
-    //Loop through all of the points of the superunit
-    for(const auto &poly: gc.at(mpi))
-    for(const auto &ring: poly)
-    for(unsigned int i=0;i<ring.size();i++){
-      const auto &a   = ring.at(i);
-      const auto &b   = ring.at((i+1)%ring.size()); //Loop around to beginning
-      const auto dist = EuclideanDistance(a,b);
+  //temp.resize(120e6);
 
-      //Portion of distance between the two points taken up by maxdist - used as
-      //step size for interpolation
-      const auto step = maxdist/dist;
+  //Load all the unit's points into a vector
+  for(const auto &poly: mp)
+  for(const auto &ring: poly)
+  for(unsigned int i=0;i<ring.size();i++){
+    const auto &a   = ring.at(i);
+    const auto &b   = ring.at((i+1)%ring.size()); //Loop around to beginning
+    const auto dist = EuclideanDistance(a,b);
 
-      //Calculate intermediate points using linear interpolation via method of
-      //weighted averages
-      int    si = 0; //Which portion of the weighted average we are on - prevents build up of floating errors
-      double st = 0; //Portion of the average coming from start vs end point
-
-      Point2D pta = a;
-      do {
-        Point2D ptb(
-          (1-st)*a.x + st*b.x,
-          (1-st)*a.y + st*b.y
-        );
-        Segment(pta,ptb)
-        si++;
-        st = si*step;
-      } while (st<1);
-
-      temp.first.emplace_back(mpi);
+    //Segment is already less than maximum distance, so accept it without
+    //modification
+    if(dist<=maxdist){
+      temp.emplace_back(a,b);
+      continue;
     }
-  }
 
+    //Number of steps needed to get from a to b, round down since the last step
+    //will be handled specially to prevent floating-point error
+    const int steps = std::floor(dist/maxdist);
+
+    //Size of the steps as a fraction of the total distance
+    const double stepsize = maxdist/dist;
+
+    //Previous point
+    Point2D pta = a;
+
+    //Start at step 1, since starting at 0 would give a segment from A to A. Use
+    //inclusive bounds (<=) since we rounded down above
+    for(int i=1;i<=steps;i++){
+      const double st = i*stepsize;
+
+      Point2D ptb(
+        (1-st)*a.x + st*b.x,
+        (1-st)*a.y + st*b.y
+      );   
+
+      temp.emplace_back(pta,ptb);
+      pta = ptb;
+    }
+
+    temp.emplace_back(pta,b);
+
+  }
+  
   return temp;
 }
 
@@ -354,6 +404,7 @@ void FindNeighbouringDistricts(
     AddToSpIndex(gc.at(i), gcidx, i, expand_bb_by);
   gcidx.buildIndex();
 
+  std::cerr<<"Finding neighbours..."<<std::endl;
   //Loop through all of the units
   #pragma omp parallel for
   for(unsigned int gci=0;gci<gc.size();gci++){
@@ -361,12 +412,14 @@ void FindNeighbouringDistricts(
 
     const auto this_bb = unit.bbox();
 
+    const auto this_segs = GetDensifiedBorderSegments(unit, max_boundary_pt_dist);
+
     // found_neighbours.insert(i); //TODO
 
     //Find the neighbours of the unit by overlapping bounding boxes
     const auto neighbours = gcidx.query(unit);
 
-    std::cerr<<"Determining neighbourness..."<<std::endl;
+    //std::cerr<<"Determining neighbourness..."<<std::endl;
     //Loop over the neighbouring units
     for(const auto &n: neighbours){
       auto &nunit = gc.at(n);
@@ -388,24 +441,31 @@ void FindNeighbouringDistricts(
         max_neighbour_pt_dist        
       );
 
-      //Lambda to add points to the segment grid
-      const auto add_points = [&](const MultiPolygon &mp, const bool red){
-        //Loop over points of the superunit
-        for(const auto &poly1: mp)
-        for(const auto &ring1: poly1)
-        for(unsigned int i1=0;i1<ring1.size();i1++)
-          sg.addSegment( ring1.at(i1), ring1.at((i1+1)%ring1.size()), red);
-      };
+      // //Lambda to add points to the segment grid
+      // const auto add_points = [&](const MultiPolygon &mp, const bool red){
+      //   //Loop over points of the superunit
+      //   for(const auto &poly1: mp)
+      //   for(const auto &ring1: poly1)
+      //   for(unsigned int i1=0;i1<ring1.size();i1++)
+      //     sg.addSegment( ring1.at(i1), ring1.at((i1+1)%ring1.size()), red);
+      // };
 
       //Add points from both MultiPolygons. Arbitrarily call one red and the
       //other blue
-      add_points(unit,  true );
-      add_points(nunit, false);
+      for(auto &seg: this_segs)
+        sg.addSegment(seg, true);
+
+      const auto n_segs = GetDensifiedBorderSegments(nunit, max_boundary_pt_dist);
+      for(auto &seg: n_segs)
+        sg.addSegment(seg, false);
+
+      //sg.printCellCounts();
+      //std::cout<<"Cells="<<sg.sizeCells()<<", Full cells="<<(sg.getWidth()*sg.getHeight())<<std::endl;
 
       if(sg.areThereSegmentsWithinEpsilon(max_neighbour_pt_dist))
         unit.neighbours.push_back(n);
 
-      std::cout<<"Blue="<<sg.sizeBlue()<<", Red="<<sg.sizeRed()<<", total="<<(sg.sizeBlue()+sg.sizeRed())<<", comparisons="<<sg.numSegSegComparisons()<<std::endl;
+      //std::cout<<"Blue="<<sg.sizeBlue()<<", Red="<<sg.sizeRed()<<", total="<<(sg.sizeBlue()+sg.sizeRed())<<", comparisons="<<sg.numSegSegComparisons()<<std::endl;
     }
   }
 
