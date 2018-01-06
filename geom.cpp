@@ -752,4 +752,37 @@ double SegmentSegmentDistanceSquared(
 }
 
 
+
+//Info: https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
+//Info: https://stackoverflow.com/questions/8721406/how-to-determine-if-a-point-is-inside-a-2d-convex-polygon/23223947#23223947
+//Info: http://stackoverflow.com/a/2922778/752843
+bool ContainsPoint(const Ring &ring, const Point2D &pt){
+  const auto &ringpts = ring.v;
+  unsigned int i, j;
+  int c = 0;
+  for (i = 0, j = ringpts.size()-1; i < ringpts.size(); j = i++) {
+    if ( ((ringpts[i].y>pt.y) != (ringpts[j].y>pt.y)) &&
+     (pt.x < (ringpts[j].x-ringpts[i].x) * (pt.y-ringpts[i].y) / (ringpts[j].y-ringpts[i].y) + ringpts[i].x) )
+       c = !c;
+  }
+  return c;
+}
+
+bool ContainsPoint(const Polygon      &poly,  const Point2D &pt){
+  for(const auto &ring: poly.v){
+    if(ContainsPoint(ring,pt))
+      return true;
+  }
+  return false;
+}
+
+bool ContainsPoint(const MultiPolygon &mp, const Point2D &pt){
+  for(const auto &poly: mp.v){
+    if(ContainsPoint(mp,pt))
+      return true;
+  }
+  return false;
+}
+
+
 }

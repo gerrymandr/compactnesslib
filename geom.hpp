@@ -153,6 +153,10 @@ unsigned holeCount(const MultiPolygon &mp);
 
 Point2D CentroidPTSH(const MultiPolygon &mp);
 
+bool ContainsPoint(const Ring         &r,    const Point2D &pt);
+bool ContainsPoint(const Polygon      &poly, const Point2D &pt);
+bool ContainsPoint(const MultiPolygon &mp,   const Point2D &pt);
+
 
 template<class T>
 unsigned PointCount(const T &geom){
