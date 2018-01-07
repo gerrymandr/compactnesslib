@@ -784,7 +784,7 @@ bool ContainsPoint(const Polygon      &poly,  const Point2D &pt){
 
 bool ContainsPoint(const MultiPolygon &mp, const Point2D &pt){
   for(const auto &poly: mp.v){
-    if(ContainsPoint(mp,pt))
+    if(ContainsPoint(poly,pt))
       return true;
   }
   return false;
