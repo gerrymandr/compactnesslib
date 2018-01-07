@@ -185,6 +185,11 @@ std::vector<unsigned int> SpIndex::query( const BoundingBox &rect ) const {
   return ret;
 }
 
+/**
+  Adds the bounding box of the multipolygon \p mp into SpIndex \sp associating
+  it with an \p id. The bounding box is expanded by \p expandby units outward in 
+  all directions.
+*/
 void AddToSpIndex(const MultiPolygon &mp, SpIndex &sp, const unsigned int id, const double expandby){
   auto bb = mp.bbox();
   bb.expand(expandby);

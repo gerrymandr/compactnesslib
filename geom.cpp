@@ -235,6 +235,12 @@ void GeoCollection::correctWindingDirection(){
   }
 }
 
+
+/**
+  Creates a clipper path for each element of the geocollection. This speeds
+  processing later since these paths will be used to find intersection areas
+  and other vector operations.
+*/
 void GeoCollection::clipperify() {
   for(unsigned int i=0;i<v.size();i++)
     v[i].clipper_paths = ConvertToClipper(v[i], false);
