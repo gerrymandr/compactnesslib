@@ -23,7 +23,7 @@ typedef std::pair<ownervec_t, pointvec_t> owner_point_vec_t;
 class SegmentGrid {
  private:
   std::vector<Segment> segments;
-  typedef std::vector<const Segment*> segrefvec;
+  typedef std::vector<int> segrefvec;
 
   //The grid. We assume that the data is sparse, since we are dealing with
   //polygons, and, therefore, use an unordered_map
@@ -50,8 +50,8 @@ class SegmentGrid {
     for(const auto &a: segvec){
       segcomp_count++;
       const auto dist = SegmentSegmentDistanceSquared(
-        a->first,
-        a->second,
+        segments.at(a).first,
+        segments.at(a).second,
         seg.first,
         seg.second
       );
@@ -112,8 +112,8 @@ class SegmentGrid {
 
     segments.emplace_back(a,b);
 
-    acell.emplace_back( &segments[segments.size()-1] );  
-    bcell.emplace_back( &segments[segments.size()-1] );  
+    acell.emplace_back( segments.size()-1 );  
+    bcell.emplace_back( segments.size()-1 );  
   }
 
   void addSegment(const Segment &seg){
