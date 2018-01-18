@@ -358,7 +358,7 @@ void FindNeighbouringDistricts(
 
   std::cerr<<"Finding neighbours..."<<std::endl;
   //Loop through all of the units
-  #pragma omp parallel for
+  #pragma omp parallel for default(none) shared(gc,gcidx)
   for(unsigned int gci=0;gci<gc.size();gci++){
     auto &unit = gc.at(gci);
 
