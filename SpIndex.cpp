@@ -167,7 +167,7 @@ void SpIndex::insertDeferred( const unsigned int id, const BoundingBox &bb ){
   boxes_to_insert.emplace_back(id,bb);
 }
 
-std::vector<unsigned int> SpIndex::query( const MultiPolygon &mp ) const {
+std::vector<unsigned int> SpIndex::query( const MultiPolygon &mp  ) const {
   return query(mp.bbox());
 }
 
