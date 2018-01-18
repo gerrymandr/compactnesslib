@@ -89,6 +89,15 @@ class SegmentGrid {
     cells.reserve(width*height/10);
   }
 
+  void printSegments() const {
+    for(const auto &seg: segments)
+      std::cerr<<"\t"
+      <<"("<<seg.first.x<<","<<seg.first.y<<")"
+      <<"-"
+      <<"("<<seg.second.x<<","<<seg.second.y<<")"
+      <<std::endl;
+  }
+
   void addSegment(
     const Point2D &a,  //End point of segment
     const Point2D &b   //End point of segment
