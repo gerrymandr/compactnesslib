@@ -39,8 +39,9 @@ class SpIndex {
 
     /* queries */
 
-    std::vector<unsigned int> query( const BoundingBox &bb ) const;
+    std::vector<unsigned int> query( const BoundingBox &bb  ) const;
     std::vector<unsigned int> query( const MultiPolygon &mp ) const;
+    std::vector<unsigned int> query( const Point2D &pt      ) const;
 
 
 //    friend class SpIndexData; // for access to featureInfo()

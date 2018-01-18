@@ -171,6 +171,10 @@ std::vector<unsigned int> SpIndex::query( const MultiPolygon &mp  ) const {
   return query(mp.bbox());
 }
 
+std::vector<unsigned int> SpIndex::query( const Point2D &pt       ) const {
+  return query(BoundingBox(pt.x,pt.y,pt.x,pt.y));
+}
+
 std::vector<unsigned int> SpIndex::query( const BoundingBox &rect ) const {
   const SpatialIndex::Region r( BoundingBoxToRegion(rect) );
 
