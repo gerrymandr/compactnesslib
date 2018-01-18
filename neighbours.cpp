@@ -378,7 +378,8 @@ void FindNeighbouringDistricts(
     for(auto &seg: GetDensifiedBorderSegments(unit, max_neighbour_dist))
       sg.addSegment(seg);    
 
-    //Find the neighbours of the unit by overlapping bounding boxes
+    //Find the neighbours of the unit by overlapping bounding boxes. (This is
+    //thread-safe!)
     const auto neighbours = gcidx.query(unit);
 
     //std::cerr<<"Determining neighbourness..."<<std::endl;
