@@ -597,7 +597,8 @@ void CalcParentOverlap(
   }
 
   //Make sure that the parents all have the same information as the children so
-  //we can access it from either direction
+  //we can access it from either direction. Don't parallelize this loop since
+  //multiple subunits could be accessing parents' memory at the same time.
   for(unsigned int i=0;i<subunits.size();i++){
     for(auto &p: subunits[i].parents)
       superunits.at(p.first).children.emplace_back(i, p.second);
