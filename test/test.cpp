@@ -10,10 +10,16 @@ using namespace complib;
 
 TEST_CASE("Data test"){
   auto gc = complib::ReadShapefile("test_data/cb_2015_us_cd114_20m.shp");
+
+  gc.clipperify();
+
   for(const auto &mp: gc)
     CHECK(areaExcludingHoles(mp)>0);
-  for(const auto &mp: gc)
-    CHECK(IntersectionArea(mp,mp.getHull())>0);
+  for(const auto &mp: gc){
+    auto hull = mp.getHull();
+    hull.clipper_paths = ConvertToClipper(hull, false);
+    CHECK(IntersectionArea(mp,hull)>0);
+  }
   CHECK(gc.size()==216);
   for(const auto &mp: gc){
     if(mp.props.at("GEOID")=="1307"){
@@ -73,7 +79,7 @@ TEST_CASE("Circle"){
   CHECK(ScoreReockPT(mp)==doctest::Approx(1.0));
 }
 
-TEST_CASE("Name lenth"){
+TEST_CASE("Name length"){
   //Score names can't exceed 10 characters due to shapefile limitations
   for(auto &sn: getListOfUnboundedScores())
     CHECK(sn.size()<=10);
@@ -105,6 +111,9 @@ TEST_CASE("Intersection area: big square and little square"){
   auto gca = ReadGeoJSON(inita);
   auto gcb = ReadGeoJSON(initb);
 
+  gca.clipperify();
+  gcb.clipperify();
+
   SUBCASE("Area forward"){
     CHECK(IntersectionArea(gca[0],gcb[0])==4);
   }
@@ -122,6 +131,9 @@ TEST_CASE("Intersection areas big square with hole and little square"){
 
   auto gca = ReadGeoJSON(inita);
   auto gcb = ReadGeoJSON(initb);
+
+  gca.clipperify();
+  gcb.clipperify();
 
   SUBCASE("Area forward"){
     CHECK(IntersectionArea(gca[0],gcb[0])==1);
@@ -143,6 +155,9 @@ TEST_CASE("Polygon with hole"){
 
   auto gca = ReadGeoJSON(inita);
   auto gcb = ReadGeoJSON(initb);
+
+  gca.clipperify();
+  gcb.clipperify();
 
   CHECK(areaIncludingHoles(gca[0])==16);
   CHECK(areaIncludingHoles(gcb[0])==4);
@@ -168,26 +183,30 @@ TEST_CASE("SpIndex"){
   int id=0;
   for(double y=0;y<1000;y+=100)
   for(double x=0;x<1000;x+=100)
-    sp.addBox(x,y,x+100,y+100,id++);
+    sp.insert(id++,BoundingBox(x,y,x+100,y+100));
 
-  CHECK(sp.queryPoint(Point2D(350,350))==33);
-  CHECK(sp.queryPoint(Point2D(750,550))==57);
+  CHECK(sp.query(Point2D(350,350)).front()==33);
+  CHECK(sp.query(Point2D(750,550)).front()==57);
 
   Polygon p;
-  p.exterior.emplace_back(1200,1200);
-  p.exterior.emplace_back(1200,1300);
-  p.exterior.emplace_back(1300,1300);
-  p.exterior.emplace_back(1300,1200);
+  p.emplace_back();
+  p.front().emplace_back(1200,1200);
+  p.front().emplace_back(1200,1300);
+  p.front().emplace_back(1300,1300);
+  p.front().emplace_back(1300,1200);
 
-  AddPolygonToSpIndex(p, sp, 347);
+  MultiPolygon mp;
+  mp.push_back(p);
+
+  AddToSpIndex(mp, sp, 347, 0);
   sp.buildIndex();
 
-  CHECK(sp.queryPoint(Point2D(1250,1270))==347);
-  CHECK(sp.queryPoint(Point2D(2750,3379))==-1);
+  CHECK(sp.query(Point2D(1250,1270)).front()==347);
+  CHECK(sp.query(Point2D(2750,3379)).front()==-1);
 
-  CHECK(p.containsPoint(Point2D(1250,1270)));
-  CHECK(p.containsPoint(Point2D(1243,1222)));
-  CHECK(!p.containsPoint(Point2D(1194,1222)));
+  CHECK(ContainsPoint(p,Point2D(1250,1270)));
+  CHECK(ContainsPoint(p,Point2D(1243,1222)));
+  CHECK(!ContainsPoint(p,Point2D(1194,1222)));
 }
 
 
