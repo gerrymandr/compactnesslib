@@ -276,9 +276,9 @@ std::vector<Segment> GetDensifiedBorderSegments(const MultiPolygon &mp, const do
   //Load all the unit's points into a vector
   for(const auto &poly: mp)
   for(const auto &ring: poly)
-  for(unsigned int i=0;i<ring.size();i++){
-    const auto &a   = ring.at(i);
-    const auto &b   = ring.at((i+1)%ring.size()); //Loop around to beginning
+  for(unsigned int ri=0;ri<ring.size();ri++){
+    const auto &a   = ring.at(ri);
+    const auto &b   = ring.at((ri+1)%ring.size()); //Loop around to beginning
     const auto dist = EuclideanDistance(a,b);
 
     //Segment is already less than maximum distance, so accept it without
