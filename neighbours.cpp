@@ -395,8 +395,14 @@ void FindNeighbouringDistricts(
       const auto n_segs = GetDensifiedBorderSegments(nunit, max_neighbour_dist);
       for(auto &seg: n_segs){
         if(sg.isThereANearbySegment(seg)){
-          unit.neighbours.push_back(n);
-          nunit.neighbours.push_back(gci);
+          //Both of the following lins must be critical since this unit could be
+          //accessed by a neighbour or access a neighbour at the same time that
+          //memory is being accessed by another thread.
+          #pragma omp critical 
+          {
+            unit.neighbours.push_back(n);
+            nunit.neighbours.push_back(gci);
+          }
           break;
         }
       }
