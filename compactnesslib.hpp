@@ -9,5 +9,6 @@
 #include "csv.hpp"
 #include "wkt.hpp"
 #include "neighbours.hpp"
+#include "SpIndex.hpp"
 
 #endif
