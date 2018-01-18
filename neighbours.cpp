@@ -1,6 +1,7 @@
 #include "neighbours.hpp"
 #include "geom.hpp"
 #include "SpIndex.hpp"
+#include "compactnesslib.hpp"
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
