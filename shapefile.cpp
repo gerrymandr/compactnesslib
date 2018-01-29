@@ -263,7 +263,7 @@ DBFFieldType getType(const std::string &s){
     } catch(...) {
       return FTString;
     }
-  } else { //Is an integer
+  } else { //Not a double
     try {
       std::stoi(s);
       return FTInteger;
@@ -299,9 +299,13 @@ void WriteShapeAttributes(const GeoCollection &gc, const std::string filename){
       auto &ptv = proptypes[prop.first];
       const auto this_type=getType(prop.second);
       if(ptv.type!=this_type){
-        ptv.type = FTString;
-        std::cerr<<"Warning: Property types for shapefile output don't match! Expected '"+std::to_string(ptv.type)+"' got '" + std::to_string(this_type) +"'! Property name='"+prop.first+"', value='"+prop.second+"'. Defaulting to string."<<std::endl;
-      } 
+        if((ptv.type==FTDouble && this_type==FTInteger) || (ptv.type==FTInteger && this_type==FTDouble)){
+          ptv.type = FTDouble;
+        } else {
+          ptv.type = FTString;
+          std::cerr<<"Warning: Property types for shapefile output don't match! Expected '"+std::to_string(ptv.type)+"' got '" + std::to_string(this_type) +"'! Property name='"+prop.first+"', value='"+prop.second+"'. Defaulting to string."<<std::endl;
+        } 
+      }
       ptv.width = std::max(ptv.width,(int)prop.second.size());
     }
   }
