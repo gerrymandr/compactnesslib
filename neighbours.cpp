@@ -335,13 +335,16 @@ TEST_CASE("Densified border segments"){
 
 
 
-//////////////////////////////////////////////////////////////////
-//Okay, back to my stuff
 
-void FindNeighbouringDistricts(
+///Our strategy here is to build an R*-tree (SpIndex) out of the bounding boxes
+///of the units. We expand the bounding boxes by \p expand_bb_by to ensure that
+///those belonging to neighbouring units overlap. We then discretize the
+///perimeters of the units and use the discretized perimeters to check for
+///proximity.
+void FindNeighbouringUnits(
   GeoCollection &gc,  
   const double max_neighbour_dist,     ///< Distance within which a units are considered to be neighbours.
-  const double expand_bb_by            ///< Distance by which units' bounding boxes are expanded. Only districts with overlapping boxes are checked for neighbourness. Value should be >0.
+  const double expand_bb_by            ///< Distance by which units' bounding boxes are expanded. Only units with overlapping boxes are checked for neighbourness. Value should be >0.
 ){
   //Since a neighbour relationship is two-way, we can save time by making notes
   //of those units for which we have already identified neighbours and avoiding
@@ -496,6 +499,15 @@ void FindExternalChildren(
 
 
 
+///Our strategy here is to build an R*-tree (SpIndex) out of the bounding boxes
+///of the superunits. We then check each potential subunit to find the
+///superunits it overlaps. We then discretize the perimeters of the units and
+///use the discretized perimeters to check for proximity. If a district is
+///proximal to the edge of a parent, we can run a more expensive polygon-polygon
+///intersection calculation. Otherwise, we choose an arbitrary point of the
+///subunit and perform point-in-polygon checks until we find a parent. (There is
+///more than one PIP check since the bounding box of the subunit may intersect
+///multiple potential parents even if the subunit is only within one parent.)
 void CalcParentOverlap(
   GeoCollection &subunits,
   GeoCollection &superunits,

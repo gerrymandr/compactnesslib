@@ -4,10 +4,10 @@
 #include "geom.hpp"
 
 namespace complib {
-  void FindNeighbouringDistricts(
+  void FindNeighbouringUnits(
     GeoCollection &gc,  
     const double max_neighbour_dist,     ///< Distance within which a units are considered to be neighbours.
-    const double expand_bb_by            ///< Distance by which units' bounding boxes are expanded. Only districts with overlapping boxes are checked for neighbourness. Value should be >0.
+    const double expand_bb_by            ///< Distance by which units' bounding boxes are expanded. Only units with overlapping boxes are checked for neighbourness. Value should be >0.
   );
 
   void CalcParentOverlap(
