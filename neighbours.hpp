@@ -15,7 +15,8 @@ namespace complib {
     GeoCollection &superunits,
     const double complete_inclusion_thresh, ///< A subunit with more fractional area than this in the parent are 100% included, all other potential parents are ignored
     const double not_included_thresh,       ///< A subunit with less fractional area than this in a parent disregards that parent
-    const double edge_adjacency_dist        ///< Distance within which a subunit is considered to be on the border of a superunit.  
+    const double edge_adjacency_dist,       ///< Distance within which a subunit is considered to be on the border of a superunit.  
+    const bool   print_parent_columns       ///< If True, a column is printed for each possible parent indicating subunit inclusion fractions. Generally you should want this to be False.
   );
 
   //Finds external children who still have 100% overlap with their parent

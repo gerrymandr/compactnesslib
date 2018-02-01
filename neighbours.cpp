@@ -153,8 +153,8 @@ class SegmentGrid {
     //repeating searches. Since this is a small dataset, we use a vector to
     //avoid the overhead of using a set. Since each cell is surrounded by 8
     //neighbours plus itself, there are at most 18 entries in the list.
-    std::vector<int> explored;
-    explored.reserve(18);
+    // std::vector<int> explored;
+    // explored.reserve(18);
 
     auto nloop = [&](const int cx, const int cy){
       //Loop through neighbours
@@ -171,9 +171,9 @@ class SegmentGrid {
           continue;                                 //Nope
 
         //Has this neighbouring cell already been explored?
-        if(std::find(explored.begin(),explored.end(),nidx)!=explored.end())
-          continue;
-        explored.push_back(nidx);
+        // if(std::find(explored.begin(),explored.end(),nidx)!=explored.end())
+        //   continue;
+        // explored.push_back(nidx);
 
         const auto& ncell = cells.at(nidx);
 
@@ -501,7 +501,8 @@ void CalcParentOverlap(
   GeoCollection &superunits,
   const double complete_inclusion_thresh, ///< A subunit with more fractional area than this in the parent are 100% included, all other potential parents are ignored
   const double not_included_thresh,       ///< A subunit with less fractional area than this in a parent disregards that parent
-  const double edge_adjacency_dist        ///< Distance within which a subunit is considered to be on the border of a superunit.  
+  const double edge_adjacency_dist,       ///< Distance within which a subunit is considered to be on the border of a superunit.  
+  const bool   print_parent_columns       ///< If True, a column is printed for each possible parent indicating subunit inclusion fractions. Generally you should want this to be False.
 ){
   SpIndex supidx;
 
@@ -617,6 +618,14 @@ void CalcParentOverlap(
     for(const auto &p: sub.parents){
       sub.props["PARENTS"]  += std::to_string(p.first)  + ",";
       sub.props["PARENTPR"] += std::to_string(p.second) + ",";
+    }
+
+    //TODO: Nuclear option for testing
+    if(print_parent_columns){
+      for(unsigned int i=0;i<superunits.size();i++)
+        sub.props["PAR" + std::to_string(i)] = std::to_string(0);
+      for(const auto &p: sub.parents)
+        sub.props["PAR" + std::to_string(p.first)] = std::to_string(p.second);
     }
 
     //Drop the trailing commas
