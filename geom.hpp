@@ -47,7 +47,8 @@ class BoundingBox {
   double ymax() const;
   BoundingBox& expand(const double expandby);
   //Combine bounding boxes into a large one
-  BoundingBox operator+(const BoundingBox &b) const;
+  BoundingBox  operator+(const BoundingBox &b) const;
+  BoundingBox& operator+=(const BoundingBox& b);
 };
 
 class Point2D {

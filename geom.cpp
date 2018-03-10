@@ -89,6 +89,14 @@ BoundingBox BoundingBox::operator+(const BoundingBox &b) const {
   return temp;
 }
 
+BoundingBox& BoundingBox::operator+=(const BoundingBox& b){
+  xmin() = std::min( xmin(), b.xmin() );
+  ymin() = std::min( ymin(), b.ymin() );
+  xmax() = std::max( xmax(), b.xmax() );
+  ymax() = std::max( ymax(), b.ymax() );
+  return *this;
+}
+
 // bool   Ring::containsPoint(const Point2D &xy) const {
 //   unsigned int i, j;
 //   int c = 0;
