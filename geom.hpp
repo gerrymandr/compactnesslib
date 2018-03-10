@@ -125,7 +125,9 @@ BoundingBox bbox(const MultiPolygon &mp);
 double area(const Ring &r);
 double areaIncludingHoles(const Polygon &p);
 double areaIncludingHoles(const MultiPolygon &mp);
-double areaExcludingHoles(const MultiPolygon &mp);
+
+double areaExcludingHoles(const Polygon      &poly);
+double areaExcludingHoles(const MultiPolygon &mp  );
 
 double areaHoles(const Polygon &p);
 double areaHoles(const MultiPolygon &mp);
