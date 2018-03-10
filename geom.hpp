@@ -118,7 +118,9 @@ class GeoCollection {
 double EuclideanDistanceSquared(const Point2D &a, const Point2D &b);
 double EuclideanDistance(const Point2D &a, const Point2D &b);
 
-
+BoundingBox bbox(const Ring         &r );
+BoundingBox bbox(const Polygon      &p );
+BoundingBox bbox(const MultiPolygon &mp);
 
 double area(const Ring &r);
 double areaIncludingHoles(const Polygon &p);

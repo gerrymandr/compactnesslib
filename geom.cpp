@@ -218,6 +218,7 @@ void MultiPolygon::reverse() {
 }
 
 BoundingBox MultiPolygon::bbox() const {
+  std::cerr<<"Deprecated in favour of compactnesslib::bbox()"<<std::endl;
   BoundingBox bb;
   for(const auto &p: *this)
   for(const auto &r: p)
@@ -797,6 +798,45 @@ bool ContainsPoint(const MultiPolygon &mp, const Point2D &pt){
   }
   return false;
 }
+
+
+
+
+
+
+
+BoundingBox bbox(const Ring         &r ){
+  BoundingBox bb;
+  for(const auto &pt: r){
+    bb.xmin() = std::min(bb.xmin(),pt.x);
+    bb.xmax() = std::max(bb.xmax(),pt.x);
+    bb.ymin() = std::min(bb.ymin(),pt.y);
+    bb.ymax() = std::max(bb.ymax(),pt.y);
+  }
+
+  return bb;
+}
+
+BoundingBox bbox(const Polygon      &p ){
+  BoundingBox bb;
+  for(const auto &r: p)
+    bb += bbox(r);
+
+  return bb;
+}
+
+BoundingBox bbox(const MultiPolygon &mp){
+  BoundingBox bb;
+  for(const auto &p: mp)
+    bb += bbox(p);
+
+  return bb;
+}
+
+
+
+
+
 
 
 }
