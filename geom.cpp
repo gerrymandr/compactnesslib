@@ -788,11 +788,15 @@ bool ContainsPoint(const Ring &ring, const Point2D &pt){
 }
 
 bool ContainsPoint(const Polygon      &poly,  const Point2D &pt){
-  for(const auto &ring: poly.v){
-    if(ContainsPoint(ring,pt))
-      return true;
-  }
-  return false;
+  if(!ContainsPoint(poly.at(0),pt))
+    return false;
+
+  //Loop through holes of polygon
+  for(auto hole = poly.begin()+1;hole!=poly.end();hole++)
+    if(ContainsPoint(*hole,pt))
+      return false;
+
+  return true;
 }
 
 bool ContainsPoint(const MultiPolygon &mp, const Point2D &pt){
