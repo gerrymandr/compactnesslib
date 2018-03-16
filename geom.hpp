@@ -49,6 +49,7 @@ class BoundingBox {
   //Combine bounding boxes into a large one
   BoundingBox  operator+(const BoundingBox &b) const;
   BoundingBox& operator+=(const BoundingBox& b);
+  bool overlaps(const BoundingBox &b) const;
 };
 
 class Point2D {

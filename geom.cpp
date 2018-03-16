@@ -97,6 +97,12 @@ BoundingBox& BoundingBox::operator+=(const BoundingBox& b){
   return *this;
 }
 
+bool BoundingBox::overlaps(const BoundingBox &b) const {
+  //NOTE: May want to think about whether `<=`/`>=` should be used here.
+  return    xmin()<b.xmax() && xmax()>b.xmin() 
+         && ymin()<b.ymax() && ymax()>b.ymin();
+}
+
 // bool   Ring::containsPoint(const Point2D &xy) const {
 //   unsigned int i, j;
 //   int c = 0;
