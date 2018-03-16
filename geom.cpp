@@ -224,7 +224,9 @@ void MultiPolygon::reverse() {
 }
 
 BoundingBox MultiPolygon::bbox() const {
-  std::cerr<<"Deprecated in favour of compactnesslib::bbox()"<<std::endl;
+  #ifdef COMPACTNESSLIB_WARNINGS
+    std::cerr<<"Deprecated in favour of compactnesslib::bbox()"<<std::endl;
+  #endif
   BoundingBox bb;
   for(const auto &p: *this)
   for(const auto &r: p)
@@ -846,11 +848,5 @@ BoundingBox bbox(const MultiPolygon &mp){
 
   return bb;
 }
-
-
-
-
-
-
 
 }

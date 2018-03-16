@@ -610,14 +610,16 @@ void CalcParentOverlap(
         }
       }      
 
-      if(sub.parents.size()==0){
-        #pragma omp critical
-        {
-          std::cerr<<"Warning! Could not find a containing parent for a subunit! Dumping properties."<<std::endl;
-          for(const auto &kv: sub.props)
-            std::cerr<<"\t"<<kv.first<<" = "<<kv.second<<std::endl;
+      #ifdef COMPACTNESSLIB_WARNINGS
+        if(sub.parents.size()==0){
+          #pragma omp critical
+          {
+            std::cerr<<"Warning! Could not find a containing parent for a subunit! Dumping properties."<<std::endl;
+            for(const auto &kv: sub.props)
+              std::cerr<<"\t"<<kv.first<<" = "<<kv.second<<std::endl;
+          }
         }
-      }
+      #endif
     }
   }
 
