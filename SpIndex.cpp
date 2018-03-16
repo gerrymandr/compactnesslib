@@ -140,6 +140,11 @@ SpIndex::SpIndex( const idbb &fi){
 }
 
 void SpIndex::buildIndex(){
+  if(boxes_to_insert.empty()){
+    std::cerr<<"Warning! No bounding boxes queued for insertion!";
+    d.reset();
+    return;
+  }
   d.reset(new SpIndexData(boxes_to_insert));
 }
 
