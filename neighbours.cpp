@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <stdexcept>
 #include "lib/doctest.h"
 
 //TODO
@@ -517,6 +518,9 @@ void CalcParentOverlap(
   const bool   print_parent_columns       ///< If True, a column is printed for each possible parent indicating subunit inclusion fractions. Generally you should want this to be False.
 ){
   SpIndex supidx;
+
+  if(superunits.empty())
+    throw std::runtime_error("No superunits provided!");
 
   //Add all the superunits to an R*-tree so we can quickly find potential
   //children using minimum bounding boxes.
