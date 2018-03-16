@@ -198,11 +198,11 @@ TEST_CASE("SpIndex"){
   MultiPolygon mp;
   mp.push_back(p);
 
-  AddToSpIndex(mp, sp, 347, 0);
+  AddToSpIndex(mp, sp, 347, 0.);
   sp.buildIndex();
 
   CHECK(sp.query(Point2D(1250,1270)).front()==347);
-  CHECK(sp.query(Point2D(2750,3379)).front()==-1);
+  CHECK(sp.query(Point2D(2750,3379)).size()==0);
 
   CHECK(ContainsPoint(p,Point2D(1250,1270)));
   CHECK(ContainsPoint(p,Point2D(1243,1222)));
