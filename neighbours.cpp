@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <stdexcept>
 #include "lib/doctest.h"
 
 //TODO
@@ -518,6 +519,9 @@ void CalcParentOverlap(
 ){
   SpIndex supidx;
 
+  if(superunits.empty())
+    throw std::runtime_error("No superunits provided!");
+
   //Add all the superunits to an R*-tree so we can quickly find potential
   //children using minimum bounding boxes.
   for(unsigned int i=0;i<superunits.size();i++)
@@ -587,6 +591,13 @@ void CalcParentOverlap(
         continue;
       }
 
+      if(sub.v.empty())
+        throw std::runtime_error("Subunit has no polygons!");
+      if(sub.v.front().empty())
+        throw std::runtime_error("Subunit has no rings!");
+      if(sub.v.front().v.empty())
+        throw std::runtime_error("Subunit has no rings!");
+
       //Get first point of first ring of first polygon
       const auto first_pt = sub.v.front().v.front().v.front();
 
@@ -599,14 +610,16 @@ void CalcParentOverlap(
         }
       }      
 
-      if(sub.parents.size()==0){
-        #pragma omp critical
-        {
-          std::cerr<<"Warning! Could not find a containing parent for a subunit! Dumping properties."<<std::endl;
-          for(const auto &kv: sub.props)
-            std::cerr<<"\t"<<kv.first<<" = "<<kv.second<<std::endl;
+      #ifdef COMPACTNESSLIB_WARNINGS
+        if(sub.parents.size()==0){
+          #pragma omp critical
+          {
+            std::cerr<<"Warning! Could not find a containing parent for a subunit! Dumping properties."<<std::endl;
+            for(const auto &kv: sub.props)
+              std::cerr<<"\t"<<kv.first<<" = "<<kv.second<<std::endl;
+          }
         }
-      }
+      #endif
     }
   }
 
