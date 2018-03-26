@@ -179,7 +179,7 @@ TEST_CASE("WKT output"){
 
 
 TEST_CASE("SpIndex"){
-  SpIndex sp;
+  SpIndex<double,int> sp;
   int id=0;
   for(double y=0;y<1000;y+=100)
   for(double x=0;x<1000;x+=100)
