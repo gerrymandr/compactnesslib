@@ -179,7 +179,7 @@ TEST_CASE("WKT output"){
 
 
 TEST_CASE("SpIndex"){
-  SpIndex sp;
+  SpIndex<double,int> sp;
   int id=0;
   for(double y=0;y<1000;y+=100)
   for(double x=0;x<1000;x+=100)
@@ -198,11 +198,11 @@ TEST_CASE("SpIndex"){
   MultiPolygon mp;
   mp.push_back(p);
 
-  AddToSpIndex(mp, sp, 347, 0);
+  AddToSpIndex(mp, sp, 347, 0.);
   sp.buildIndex();
 
   CHECK(sp.query(Point2D(1250,1270)).front()==347);
-  CHECK(sp.query(Point2D(2750,3379)).front()==-1);
+  CHECK(sp.query(Point2D(2750,3379)).empty()==true);
 
   CHECK(ContainsPoint(p,Point2D(1250,1270)));
   CHECK(ContainsPoint(p,Point2D(1243,1222)));

@@ -355,7 +355,7 @@ void FindNeighbouringUnits(
   //Expand the bounding boxes of the units so that they will overlap if they are
   //neighbours
   std::cerr<<"Creating R*-tree..."<<std::endl;
-  SpIndex gcidx;
+  SpIndex<double,int> gcidx;
   for(unsigned int gci=0;gci<gc.size();gci++)
     AddToSpIndex(gc.at(gci), gcidx, gci, expand_bb_by);
   gcidx.buildIndex();
@@ -516,7 +516,7 @@ void CalcParentOverlap(
   const double edge_adjacency_dist,       ///< Distance within which a subunit is considered to be on the border of a superunit.  
   const bool   print_parent_columns       ///< If True, a column is printed for each possible parent indicating subunit inclusion fractions. Generally you should want this to be False.
 ){
-  SpIndex supidx;
+  SpIndex<double,int> supidx;
 
   //Add all the superunits to an R*-tree so we can quickly find potential
   //children using minimum bounding boxes.
