@@ -32,6 +32,14 @@ available
 
 
 
+Assumptions
+========================
+
+compactnesslib assumes that you have appropriately projected your data to a
+Euclidean plane prior to performing any calculations on it.
+
+
+
 Who uses compactnesslib?
 ========================
 
