@@ -89,6 +89,20 @@ BoundingBox BoundingBox::operator+(const BoundingBox &b) const {
   return temp;
 }
 
+BoundingBox& BoundingBox::operator+=(const BoundingBox& b){
+  xmin() = std::min( xmin(), b.xmin() );
+  ymin() = std::min( ymin(), b.ymin() );
+  xmax() = std::max( xmax(), b.xmax() );
+  ymax() = std::max( ymax(), b.ymax() );
+  return *this;
+}
+
+bool BoundingBox::overlaps(const BoundingBox &b) const {
+  //NOTE: May want to think about whether `<=`/`>=` should be used here.
+  return    xmin()<b.xmax() && xmax()>b.xmin() 
+         && ymin()<b.ymax() && ymax()>b.ymin();
+}
+
 // bool   Ring::containsPoint(const Point2D &xy) const {
 //   unsigned int i, j;
 //   int c = 0;
@@ -210,6 +224,9 @@ void MultiPolygon::reverse() {
 }
 
 BoundingBox MultiPolygon::bbox() const {
+  #ifdef COMPACTNESSLIB_WARNINGS
+    std::cerr<<"Deprecated in favour of compactnesslib::bbox()"<<std::endl;
+  #endif
   BoundingBox bb;
   for(const auto &p: *this)
   for(const auto &r: p)
@@ -313,6 +330,10 @@ double areaHoles(const Polygon &p){
 
 double areaIncludingHoles(const MultiPolygon &mp){
   return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaIncludingHoles(p);}); 
+}
+
+double areaExcludingHoles(const Polygon &poly){
+  return areaIncludingHoles(poly)-areaHoles(poly);
 }
 
 double areaExcludingHoles(const MultiPolygon &mp){
@@ -775,11 +796,15 @@ bool ContainsPoint(const Ring &ring, const Point2D &pt){
 }
 
 bool ContainsPoint(const Polygon      &poly,  const Point2D &pt){
-  for(const auto &ring: poly.v){
-    if(ContainsPoint(ring,pt))
-      return true;
-  }
-  return false;
+  if(!ContainsPoint(poly.at(0),pt))
+    return false;
+
+  //Loop through holes of polygon
+  for(auto hole = poly.begin()+1;hole!=poly.end();hole++)
+    if(ContainsPoint(*hole,pt))
+      return false;
+
+  return true;
 }
 
 bool ContainsPoint(const MultiPolygon &mp, const Point2D &pt){
@@ -790,5 +815,38 @@ bool ContainsPoint(const MultiPolygon &mp, const Point2D &pt){
   return false;
 }
 
+
+
+
+
+
+
+BoundingBox bbox(const Ring         &r ){
+  BoundingBox bb;
+  for(const auto &pt: r){
+    bb.xmin() = std::min(bb.xmin(),pt.x);
+    bb.xmax() = std::max(bb.xmax(),pt.x);
+    bb.ymin() = std::min(bb.ymin(),pt.y);
+    bb.ymax() = std::max(bb.ymax(),pt.y);
+  }
+
+  return bb;
+}
+
+BoundingBox bbox(const Polygon      &p ){
+  BoundingBox bb;
+  for(const auto &r: p)
+    bb += bbox(r);
+
+  return bb;
+}
+
+BoundingBox bbox(const MultiPolygon &mp){
+  BoundingBox bb;
+  for(const auto &p: mp)
+    bb += bbox(p);
+
+  return bb;
+}
 
 }

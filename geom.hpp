@@ -47,7 +47,9 @@ class BoundingBox {
   double ymax() const;
   BoundingBox& expand(const double expandby);
   //Combine bounding boxes into a large one
-  BoundingBox operator+(const BoundingBox &b) const;
+  BoundingBox  operator+(const BoundingBox &b) const;
+  BoundingBox& operator+=(const BoundingBox& b);
+  bool overlaps(const BoundingBox &b) const;
 };
 
 class Point2D {
@@ -117,12 +119,16 @@ class GeoCollection {
 double EuclideanDistanceSquared(const Point2D &a, const Point2D &b);
 double EuclideanDistance(const Point2D &a, const Point2D &b);
 
-
+BoundingBox bbox(const Ring         &r );
+BoundingBox bbox(const Polygon      &p );
+BoundingBox bbox(const MultiPolygon &mp);
 
 double area(const Ring &r);
 double areaIncludingHoles(const Polygon &p);
 double areaIncludingHoles(const MultiPolygon &mp);
-double areaExcludingHoles(const MultiPolygon &mp);
+
+double areaExcludingHoles(const Polygon      &poly);
+double areaExcludingHoles(const MultiPolygon &mp  );
 
 double areaHoles(const Polygon &p);
 double areaHoles(const MultiPolygon &mp);
