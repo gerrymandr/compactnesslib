@@ -151,6 +151,8 @@ void ReadShapes(GeoCollection &mgons, std::string filename){
       if( ringi < psShape->nParts && psShape->panPartStart[ringi] == j ){
         if(!IsHole(psShape,ringi))
           mp.emplace_back();
+        if(mp.empty())
+          throw std::runtime_error("First ring of the polygon was a hole!");
         mp.back().emplace_back();
         ringi++;
       }
