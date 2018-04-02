@@ -100,7 +100,7 @@ namespace iterator_tpl {
 
 // Forward declaration of const_iterator:
 template <class C, typename T, class S>
-class const_iterator;
+struct const_iterator;
 
 /* * * * * MUTABLE ITERATOR TEMPLATE: * * * * */
 
@@ -154,10 +154,10 @@ struct iterator {
 
  public:
   T operator*() { return get(); }
-  iterator& operator++()   { next(); return *this; }
-  iterator operator++(int) { next(); return *this; }
-  iterator& operator--()   { prev(); return *this; }
-  iterator operator--(int) { prev(); return *this; }
+  iterator& operator++() { next(); return *this; }
+  iterator operator++(int) { iterator temp(*this); next(); return temp; }
+  iterator& operator--() { prev(); return *this; }
+  iterator operator--(int) { iterator temp(*this); prev(); return temp; }
   bool operator!=(const iterator& other) const {
     return ref != other.ref || cmp(other.state);
   }
@@ -224,10 +224,10 @@ struct iterator<C,T&,S> {
  public:
   T& operator*()  { return  get(); }
   T* operator->() { return &get(); }
-  iterator& operator++()   { next(); return *this; }
-  iterator operator++(int) { next(); return *this; }
-  iterator& operator--()   { prev(); return *this; }
-  iterator operator--(int) { prev(); return *this; }
+  iterator& operator++() { next(); return *this; }
+  iterator operator++(int) { iterator temp(*this); next(); return temp; }
+  iterator& operator--() { prev(); return *this; }
+  iterator operator--(int) { iterator temp(*this); prev(); return temp; }
   bool operator!=(const iterator& other) const {
     return ref != other.ref || cmp(other.state);
   }
@@ -235,7 +235,7 @@ struct iterator<C,T&,S> {
     return !operator!=(other);
   }
 
-  friend class iterator_tpl::const_iterator<C,T&,S>;
+  friend struct iterator_tpl::const_iterator<C,T&,S>;
 
   // Comparisons between const and normal iterators:
   bool operator!=(const const_iterator<C,T&,S>& other) const {
@@ -253,7 +253,7 @@ struct iterator<C,T&,S> {
 // S - The state keeping structure
 template <class C, typename T, class S>
 // The non-specialized version is used for T=rvalue:
-class const_iterator {
+struct const_iterator {
   // Keeps a reference to the container:
   const C* ref;
 
@@ -303,10 +303,10 @@ class const_iterator {
 
  public:
   const T operator*() { return get(); }
-  const_iterator& operator++()   { next(); return *this; }
-  const_iterator operator++(int) { next(); return *this; }
-  const_iterator& operator--()   { prev(); return *this; }
-  const_iterator operator--(int) { prev(); return *this; }
+  const_iterator& operator++() { next(); return *this; }
+  const_iterator operator++(int) { const_iterator temp(*this); next(); return temp;  }
+  const_iterator& operator--() { prev(); return *this; }
+  const_iterator operator--(int) { const_iterator temp(*this); prev(); return temp;  }
   bool operator!=(const const_iterator& other) const {
     return ref != other.ref || cmp(other.state);
   }
@@ -383,10 +383,10 @@ struct const_iterator<C,T&,S> {
  public:
   const T& operator*()  { return  get(); }
   const T* operator->() { return &get(); }
-  const_iterator& operator++()   { next(); return *this; }
-  const_iterator operator++(int) { next(); return *this; }
-  const_iterator& operator--()   { prev(); return *this; }
-  const_iterator operator--(int) { prev(); return *this; }
+  const_iterator& operator++() { next(); return *this; }
+  const_iterator operator++(int) { const_iterator temp(*this); next(); return temp; }
+  const_iterator& operator--() { prev(); return *this; }
+  const_iterator operator--(int) { const_iterator temp(*this); prev(); return temp; }
   bool operator!=(const const_iterator& other) const {
     return ref != other.ref || cmp(other.state);
   }
@@ -399,7 +399,7 @@ struct const_iterator<C,T&,S> {
     return *this;
   }
 
-  friend class iterator_tpl::iterator<C,T&,S>;
+  friend struct iterator_tpl::iterator<C,T&,S>;
 
   // Comparisons between const and normal iterators:
   bool operator!=(const iterator<C,T&,S>& other) const {
