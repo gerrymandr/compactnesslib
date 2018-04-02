@@ -2,19 +2,23 @@
 #include "geom.hpp"
 #include <iostream>
 #include <fstream>
+#include <locale>         // std::locale, std::isspace
 #include <streambuf>
 #include <stdexcept>
 #include <sstream>
 #include <iomanip>
 #include <string>
 
+
 namespace complib {
 
 
 
 void TrimStr(size_t &start, const std::string &str){
+  std::locale loc;
+
   for(;start<str.size();start++)
-    if(str[start]!=' ')
+    if(!std::isspace(str[start],loc))
       return;
   throw std::runtime_error("WKT ended with whitespace - expected something!");
 }
@@ -94,7 +98,7 @@ Polygon ParsePolygon(size_t &start, const std::string &wktstr){
 
 
 
-MultiPolygon ParseTopPolygon(size_t start, const std::string &wktstr){
+MultiPolygon ParseTopPolygon(size_t &start, const std::string &wktstr){
   MultiPolygon mps;
   TrimStr(start,wktstr);
   mps.push_back(ParsePolygon(start,wktstr));
@@ -103,7 +107,7 @@ MultiPolygon ParseTopPolygon(size_t start, const std::string &wktstr){
 
 
 
-MultiPolygon ParseMultiPolygon(size_t start, const std::string &wktstr){
+MultiPolygon ParseMultiPolygon(size_t &start, const std::string &wktstr){
   MultiPolygon mps;
   TrimStr(start,wktstr);
   if(wktstr[start]!='(')
@@ -133,13 +137,22 @@ GeoCollection ReadWKT(std::string wktstr){
   size_t start = 0;
   TrimStr(start,wktstr);
 
-  //TODO: Trim string
-  if(wktstr.compare(start,12,"MULTIPOLYGON")==0){
-    gc.push_back(ParseMultiPolygon(start+12,wktstr));
-  } else if(wktstr.compare(start,7,"POLYGON")==0){
-    gc.push_back(ParseTopPolygon(start+7,wktstr));
-  } else{
-    throw std::runtime_error("Unrecognized geometry!");
+  while(true){
+    if(wktstr.compare(start,12,"MULTIPOLYGON")==0){
+      start += 12; //Skip MULTIPOLYGON
+      gc.push_back(ParseMultiPolygon(start,wktstr));
+    } else if(wktstr.compare(start,7,"POLYGON")==0){
+      start += 7; //Skip POLYGON
+      gc.push_back(ParseTopPolygon(start,wktstr));
+    } else{
+      throw std::runtime_error("Unrecognized geometry!");
+    }
+
+    try {
+      TrimStr(start,wktstr);
+    } catch (...){
+      break; //Okay, we've reached the end of the input data
+    }
   }
 
   gc.correctWindingDirection();

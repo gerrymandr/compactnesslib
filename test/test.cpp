@@ -172,6 +172,10 @@ TEST_CASE("WKT output"){
 }
 
 
+TEST_CASE("Reading multi-line WKT file"){
+  const auto gc = ReadWKTFile("test_data/wkt_test.wkt");
+  CHECK(gc.size()==4);
+}
 
 
 
