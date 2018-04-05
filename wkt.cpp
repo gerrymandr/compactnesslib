@@ -155,7 +155,7 @@ GeoCollection ReadWKT(std::string wktstr){
     }
   }
 
-  gc.correctWindingDirection();
+  CorrectWindingDirection(gc);
   
   return gc;
 }

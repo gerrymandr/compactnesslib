@@ -193,7 +193,7 @@ GeoCollection ReadShapefile(std::string filename){
       throw std::runtime_error("Shapefile had an unclosed ring!");
   }
 
-  mgons.correctWindingDirection();
+  CorrectWindingDirection(mgons);
 
   return mgons;
 }

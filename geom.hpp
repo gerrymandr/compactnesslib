@@ -69,6 +69,7 @@ class Ring {
   Ring(const std::vector<Point2D> &ptvec);
   mutable std::vector<Point2D> hull;
   Ring getHull() const;
+  void reverse();
   ClipperLib::Paths clipper_paths;
   EXPOSE_STL_VECTOR(v);
 };
@@ -109,7 +110,6 @@ class GeoCollection {
   MultiPolygons v;
   std::string prj_str;
   void reverse();
-  void correctWindingDirection();
   void clipperify();
   EXPOSE_STL_VECTOR(v);
 };
@@ -163,6 +163,10 @@ bool ContainsPoint(const Ring         &r,    const Point2D &pt);
 bool ContainsPoint(const Polygon      &poly, const Point2D &pt);
 bool ContainsPoint(const MultiPolygon &mp,   const Point2D &pt);
 
+void CorrectWindingDirection(GeoCollection &gc);
+void CorrectWindingDirection(MultiPolygon &mp);
+void CorrectWindingDirection(Polygon &poly);
+void CorrectWindingDirection(Ring &ring);
 
 template<class T>
 unsigned PointCount(const T &geom){

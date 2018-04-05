@@ -175,6 +175,9 @@ Ring Ring::getHull() const {
   return hull;
 }
 
+void Ring::reverse(){
+  std::reverse(this->begin(),this->end());
+}
 
 
 
@@ -245,12 +248,6 @@ void GeoCollection::reverse() {
     mp.reverse();
 }
 
-void GeoCollection::correctWindingDirection(){
-  if(areaExcludingHoles(v.at(0))<0){
-    std::cerr<<"Reversed winding of polygons!"<<std::endl;
-    reverse();
-  }
-}
 
 
 /**
@@ -813,6 +810,28 @@ bool ContainsPoint(const MultiPolygon &mp, const Point2D &pt){
       return true;
   }
   return false;
+}
+
+
+
+void CorrectWindingDirection(GeoCollection &gc){
+  for(auto &mp: gc)
+    CorrectWindingDirection(mp);
+}
+
+void CorrectWindingDirection(MultiPolygon &mp){
+  for(auto &poly: mp)
+    CorrectWindingDirection(poly);
+}
+
+void CorrectWindingDirection(Polygon &poly){
+  if(poly.size()==0)
+    return;
+  if(area(poly.at(0))<0)
+    poly.at(0).reverse();
+  for(unsigned int i=1;i<poly.size();i++)
+    if(area(poly.at(i))>0)
+      poly.at(i).reverse();
 }
 
 
