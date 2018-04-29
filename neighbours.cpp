@@ -557,7 +557,7 @@ void CalcParentOverlap(
   for(unsigned int i=0;i<subunits.size();i++){
     auto &sub = subunits.at(i);
 
-    if(sub.props["EXTCHILD"]=="T"){
+    if(sub.props.at("EXTCHILD")=="T"){
       const double area  = areaExcludingHoles(sub);
 
       const auto potential_parents = sub.parents;
