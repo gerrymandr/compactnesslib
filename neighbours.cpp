@@ -522,6 +522,24 @@ void CalcParentOverlap(
   if(superunits.empty())
     throw std::runtime_error("No superunits provided!");
 
+  //Clear previous data before continuing
+  for(auto &sub: subunits){
+    sub.parents.clear();
+    sub.props["PARENTNUM"] = "";
+    sub.props["PARENTS"]   = "";
+    sub.props["PARENTPR"]  = "";
+    sub.props["CENTROIDX"] = "";
+    sub.props["CENTROIDY"] = "";
+  }
+
+  for(auto &sup: superunits){
+    sup.children.clear();
+    sup.props["CHILDNUM"]   = "";
+    sup.props["CHILDREN"]   = "";
+    sup.props["CHILDRENPR"] = "";
+  }
+
+
   //Add all the superunits to an R*-tree so we can quickly find potential
   //children using minimum bounding boxes.
   for(unsigned int i=0;i<superunits.size();i++)
