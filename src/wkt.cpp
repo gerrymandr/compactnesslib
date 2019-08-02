@@ -1,5 +1,3 @@
-#include "wkt.hpp"
-#include "geom.hpp"
 #include <iostream>
 #include <fstream>
 #include <streambuf>
@@ -8,9 +6,10 @@
 #include <iomanip>
 #include <string>
 
+#include <compactnesslib/wkt.hpp>
+#include <compactnesslib/geom.hpp>
+
 namespace complib {
-
-
 
 void TrimStr(size_t &start, const std::string &str){
   for(;start<str.size();start++)

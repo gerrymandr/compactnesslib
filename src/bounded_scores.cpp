@@ -1,10 +1,12 @@
-#include "bounded_scores.hpp"
-#include "geom.hpp"
 #include <cmath>
 #include <vector>
 #include <stdexcept>
 #include <unordered_map>
-#include "lib/clipper.hpp"
+
+#include <compactnesslib/bounded_scores.hpp>
+#include <compactnesslib/geom.hpp>
+
+#include <clipper.hpp>
 
 #include <sstream>  //TODO
 #include <iostream> //TODO

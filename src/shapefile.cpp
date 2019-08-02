@@ -1,5 +1,3 @@
-#include "shapefile.hpp"
-#include "shapelib/shapefil.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <memory>
@@ -8,7 +6,10 @@
 #include <set>
 #include <fstream>
 #include <sstream>
-#include "geom.hpp"
+
+#include <compactnesslib/geom.hpp>
+#include <compactnesslib/shapefile.hpp>
+#include <shapelib/shapefil.hpp>
 
 namespace complib {
 

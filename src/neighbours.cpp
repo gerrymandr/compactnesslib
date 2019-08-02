@@ -1,12 +1,14 @@
-#include "neighbours.hpp"
-#include "geom.hpp"
-#include "SpIndex.hpp"
-#include "compactnesslib.hpp"
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
 #include <stdexcept>
-#include "lib/doctest.h"
+
+#include <doctest.h>
+
+#include <compactnesslib/neighbours.hpp>
+#include <compactnesslib/geom.hpp>
+#include <compactnesslib/SpIndex.hpp>
+#include <compactnesslib/geojson.hpp>
 
 //TODO
 #include <iostream>

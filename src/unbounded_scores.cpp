@@ -1,8 +1,9 @@
-#include "unbounded_scores.hpp"
-#include "geom.hpp"
 #include <cmath>
 #include <vector>
 #include <stdexcept>
+
+#include <compactnesslib/unbounded_scores.hpp>
+#include <compactnesslib/geom.hpp>
 
 namespace complib {
 

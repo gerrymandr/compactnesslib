@@ -1,6 +1,7 @@
-#include "SpIndex.hpp"
 #include <string>
 #include <stdexcept>
+
+#include <compactnesslib/SpIndex.hpp>
 
 namespace complib {
 
