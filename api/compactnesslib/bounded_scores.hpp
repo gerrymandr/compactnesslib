@@ -1,12 +1,13 @@
 #ifndef _bounded_scores_hpp_
 #define _bounded_scores_hpp_
 
-#include "geojson.hpp"
-#include "geom.hpp"
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <functional>
+
+#include <compactnesslib/geojson.hpp>
+#include <compactnesslib/geom.hpp>
 
 namespace complib {
   const std::vector<std::string>& getListOfBoundedScores();

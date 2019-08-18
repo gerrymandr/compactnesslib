@@ -10,7 +10,7 @@
 
 #include <compactnesslib/geom.hpp>
 
-#include <clipper.hpp>
+#include <clipper/clipper.hpp>
 #include <doctest.h>
 #include <miniball.hpp>
 

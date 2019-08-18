@@ -8,7 +8,7 @@
 #include <limits>
 #include "Props.hpp"
 
-#include <clipper.hpp>
+#include <clipper/clipper.hpp>
 #include <iterator_tpl.h>
 
 #include <iostream>

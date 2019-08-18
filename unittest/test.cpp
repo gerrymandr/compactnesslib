@@ -1,10 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "../compactnesslib.hpp"
-#include "../lib/doctest.h"
 #include <cmath>
 #include <map>
 #include <iostream>
 #include <algorithm>
+
+#include <compactnesslib/compactnesslib.hpp>
+#include <doctest.h>
 
 using namespace complib;
 

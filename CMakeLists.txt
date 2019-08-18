@@ -28,7 +28,7 @@ add_library(compactnesslib
   lib/shapelib/shpopen.cpp
   lib/shapelib/shptree.cpp
 
-  lib/clipper.cpp
+  lib/clipper/clipper.cpp
 
   lib/spatialindex_c/rtree/BulkLoader.cpp
   lib/spatialindex_c/rtree/Index.cpp
@@ -46,7 +46,6 @@ add_library(compactnesslib
 target_include_directories(compactnesslib
 PUBLIC
   api
-PRIVATE
   lib
 )
 
@@ -54,3 +53,15 @@ target_link_libraries(compactnesslib
 PRIVATE
   OpenMP::OpenMP_CXX
 )
+
+add_executable(unittest
+  unittest/test.cpp
+)
+
+target_link_libraries(unittest
+PRIVATE
+  compactnesslib
+)
+
+enable_testing()
+add_test(NAME UnitTests COMMAND unittest WORKING_DIRECTORY unittest)

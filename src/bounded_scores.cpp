@@ -6,7 +6,7 @@
 #include <compactnesslib/bounded_scores.hpp>
 #include <compactnesslib/geom.hpp>
 
-#include <clipper.hpp>
+#include <clipper/clipper.hpp>
 
 #include <sstream>  //TODO
 #include <iostream> //TODO
