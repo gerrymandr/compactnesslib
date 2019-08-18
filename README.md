@@ -9,17 +9,26 @@ metrics of multipolygons, especially electoral districts.
 Using it as a library
 =====================
 
-To use as a library, include the compactnesslib base directory in your project.
+To use as a library, include compactnesslib in your project's `CMakeLists.txt` file:
 
-Include the library by adding:
+    add_subdirectory(compactnesslib)
 
-    #include "compactnesslib/compactnesslib.hpp"
+Then include the library in your code using:
 
-to your source file.
+    #include <compactnesslib/compactnesslib.hpp>
 
-When you compile, compile all the `./*.cpp` and `./shapelib/*.c` files. The
-files may be compiled all together without a need to respect the subdirectory
-structure.
+
+
+Running Tests
+=============
+
+To run tests build using:
+
+    mkdir build
+    cd build
+    cmake ..
+    make unittest
+    
 
 
 

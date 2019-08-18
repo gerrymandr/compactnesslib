@@ -7,8 +7,10 @@
 #include <string>
 #include <limits>
 #include "Props.hpp"
-#include "lib/clipper.hpp"
-#include "lib/iterator_tpl.h"
+
+#include <clipper/clipper.hpp>
+#include <iterator_tpl.h>
+
 #include <iostream>
 #include <numeric>
 

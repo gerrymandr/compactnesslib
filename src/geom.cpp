@@ -1,4 +1,3 @@
-#include "geom.hpp"
 #include <cmath>
 #include <algorithm>
 #include <limits>
@@ -8,9 +7,12 @@
 #include <numeric>
 #include <iostream>
 #include <memory>
-#include "lib/clipper.hpp"
-#include "lib/doctest.h"
-#include "lib/miniball.hpp"
+
+#include <compactnesslib/geom.hpp>
+
+#include <clipper/clipper.hpp>
+#include <doctest.h>
+#include <miniball.hpp>
 
 static const double DEG_TO_RAD = M_PI/180.0;
 static const double RAD_TO_DEG = 180.0/M_PI;

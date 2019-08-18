@@ -1,5 +1,3 @@
-#include "lib/json.hpp"
-#include "geojson.hpp"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -8,6 +6,9 @@
 #include <sstream>
 #include <string>
 #include <map>
+
+#include <compactnesslib/geojson.hpp>
+#include <json.hpp>
 
 using json = nlohmann::json;
 

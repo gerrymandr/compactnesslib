@@ -2,8 +2,9 @@
 #define _SpIndex_hpp_
 
 #include "geom.hpp"
-#include "lib/spatialindex/SpatialIndex.h"
 #include <memory>
+
+#include <spatialindex/SpatialIndex.h>
 
 namespace complib {
 

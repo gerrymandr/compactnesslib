@@ -1,4 +1,4 @@
-#include "Props.hpp"
+#include <compactnesslib/Props.hpp>
 #include <iostream>
 
 namespace complib {

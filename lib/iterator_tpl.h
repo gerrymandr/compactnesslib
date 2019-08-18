@@ -145,7 +145,7 @@ struct iterator {
   }
 
  protected:
-  iterator(C* ref) : ref(ref) {}
+  iterator(C* ref0) : ref(ref0) {}
 
  public:
   // Note: Instances build with this constructor should
@@ -289,7 +289,7 @@ class const_iterator {
   }
 
  protected:
-  const_iterator(const C* ref) : ref(ref) {}
+  const_iterator(const C* ref0) : ref(ref0) {}
 
  public:
   // Note: Instances build with this constructor should
@@ -368,7 +368,7 @@ struct const_iterator<C,T&,S> {
   }
 
  protected:
-  const_iterator(const C* ref) : ref(ref) {}
+  const_iterator(const C* ref0) : ref(ref0) {}
 
  public:
   // Note: Instances build with this constructor should
