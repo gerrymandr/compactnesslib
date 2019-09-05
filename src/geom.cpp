@@ -11,7 +11,6 @@
 #include <compactnesslib/geom.hpp>
 
 #include <clipper/clipper.hpp>
-#include <doctest.h>
 #include <miniball.hpp>
 
 static const double DEG_TO_RAD = M_PI/180.0;
