@@ -187,14 +187,17 @@ cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed);
 
 template<class T, class U>
 double IntersectionArea(const T &a, const U &b) {
-  if(a.clipper_paths.empty())
-    throw std::runtime_error("Must precalculate clipper paths!");
-  if(b.clipper_paths.empty())
-    throw std::runtime_error("Must precalculate clipper paths!");
-
   cl::Clipper clpr;
-  clpr.AddPaths(a.clipper_paths, cl::ptSubject, true);
-  clpr.AddPaths(b.clipper_paths, cl::ptClip, true);
+  if(a.clipper_paths.empty()){
+    clpr.AddPaths(ConvertToClipper(a, false), cl::ptSubject, true);
+  } else {
+    clpr.AddPaths(a.clipper_paths, cl::ptSubject, true);
+  }
+  if(b.clipper_paths.empty()){
+    clpr.AddPaths(ConvertToClipper(b, false), cl::ptClip, true);
+  } else {
+    clpr.AddPaths(b.clipper_paths, cl::ptClip, true);
+  }
   cl::Paths solution;
   clpr.Execute(cl::ctIntersection, solution, cl::pftEvenOdd, cl::pftEvenOdd);
 
