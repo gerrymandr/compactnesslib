@@ -49,6 +49,8 @@ PUBLIC
   lib
 )
 
+target_compile_features(compactnesslib PUBLIC cxx_std_11)
+
 target_link_libraries(compactnesslib
 PRIVATE
   OpenMP::OpenMP_CXX
@@ -62,6 +64,8 @@ target_link_libraries(unittest
 PRIVATE
   compactnesslib
 )
+
+target_compile_features(unittest PUBLIC cxx_std_11)
 
 enable_testing()
 add_test(NAME UnitTests COMMAND unittest WORKING_DIRECTORY unittest)
