@@ -365,7 +365,7 @@ void FindNeighbouringUnits(
 
   std::cerr<<"Finding neighbours..."<<std::endl;
   //Loop through all of the units
-  #pragma omp parallel for default(none) shared(gc,gcidx)
+  #pragma omp parallel for
   for(unsigned int gci=0;gci<gc.size();gci++){
     auto &unit = gc.at(gci);
 
@@ -448,7 +448,7 @@ void FindExternalChildren(
   //First, we build segment grids for the parents
   std::vector<SegmentGrid> sgvec(superunits.size());
 
-  #pragma omp parallel for default(none) shared(superunits,sgvec)
+  #pragma omp parallel for
   for(unsigned int supi=0;supi<superunits.size();supi++){
     const auto &unit   = superunits.at(supi);
     const auto this_bb = unit.bbox();
@@ -471,7 +471,7 @@ void FindExternalChildren(
 
 
   //Now we loop through the subunits to see if they are near the edges of their parents
-  #pragma omp parallel for default(none) shared(subunits,sgvec)
+  #pragma omp parallel for
   for(unsigned int subi=0;subi<subunits.size();subi++){
     //Alias the current subunit
     auto &sub = subunits[subi];
@@ -534,7 +534,7 @@ void CalcParentOverlap(
   //Use index to find potential parents. Use potential parents to find external
   //children.
   std::cout<<"Finding potential parents..."<<std::endl;
-  #pragma omp parallel for default(none) shared(subunits,superunits,supidx)
+  #pragma omp parallel for
   for(unsigned int subi=0;subi<subunits.size();subi++){
     auto &sub = subunits.at(subi);
 
@@ -555,7 +555,7 @@ void CalcParentOverlap(
 
 
   std::cout<<"Calculating parent overlaps..."<<std::endl;
-  #pragma omp parallel for default(none) shared(subunits,superunits,std::cerr)
+  #pragma omp parallel for
   for(unsigned int i=0;i<subunits.size();i++){
     auto &sub = subunits.at(i);
 
