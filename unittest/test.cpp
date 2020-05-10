@@ -210,10 +210,15 @@ TEST_CASE("SpIndex"){
   CHECK(!ContainsPoint(p,Point2D(1194,1222)));
 }
 
+TEST_CASE("Densified border segments"){
+  const std::string rect2by2 = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[2,0],[2,2],[0,2],[0,0]]]}}]}";
 
+  const auto gc   = ReadGeoJSON(rect2by2);
+  const auto segs = GetDensifiedBorderSegments(gc.at(0), 0.03);
 
-
-
+  for(const auto &seg: segs)
+    REQUIRE(EuclideanDistance(seg.first,seg.second)<=0.03000001);
+}
 
 /*
 TEST_CASE("Polygon"){

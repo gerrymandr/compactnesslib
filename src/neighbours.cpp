@@ -3,8 +3,6 @@
 #include <unordered_set>
 #include <stdexcept>
 
-#include <doctest.h>
-
 #include <compactnesslib/neighbours.hpp>
 #include <compactnesslib/geom.hpp>
 #include <compactnesslib/SpIndex.hpp>
@@ -126,8 +124,8 @@ class SegmentGrid {
 
     segments.emplace_back(a,b);
 
-    acell.emplace_back( segments.size()-1 );  
-    bcell.emplace_back( segments.size()-1 );  
+    acell.emplace_back( segments.size()-1 );
+    bcell.emplace_back( segments.size()-1 );
   }
 
   void addSegment(const Segment &seg){
@@ -193,7 +191,7 @@ class SegmentGrid {
     if(acelli!=bcelli && nloop(bx,by))
       return true;
 
-    return false;    
+    return false;
   }
 
   int sizeCells() const {
@@ -310,7 +308,7 @@ std::vector<Segment> GetDensifiedBorderSegments(const MultiPolygon &mp, const do
       Point2D ptb(
         (1-st)*a.x + st*b.x,
         (1-st)*a.y + st*b.y
-      );   
+      );
 
       temp.emplace_back(pta,ptb);
       pta = ptb;
@@ -319,23 +317,9 @@ std::vector<Segment> GetDensifiedBorderSegments(const MultiPolygon &mp, const do
     temp.emplace_back(pta,b);
 
   }
-  
+
   return temp;
 }
-
-
-
-TEST_CASE("Densified border segments"){
-  const std::string rect2by2 = "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[0,0],[2,0],[2,2],[0,2],[0,0]]]}}]}";
-  
-  const auto gc   = ReadGeoJSON(rect2by2);
-  const auto segs = GetDensifiedBorderSegments(gc.at(0), 0.03);
-
-  for(const auto &seg: segs)
-    REQUIRE(EuclideanDistance(seg.first,seg.second)<=0.03000001);
-}
-
-
 
 
 
@@ -345,7 +329,7 @@ TEST_CASE("Densified border segments"){
 ///perimeters of the units and use the discretized perimeters to check for
 ///proximity.
 void FindNeighbouringUnits(
-  GeoCollection &gc,  
+  GeoCollection &gc,
   const double max_neighbour_dist,     ///< Distance within which a units are considered to be neighbours.
   const double expand_bb_by            ///< Distance by which units' bounding boxes are expanded. Only units with overlapping boxes are checked for neighbourness. Value should be >0.
 ){
@@ -378,12 +362,12 @@ void FindNeighbouringUnits(
       this_bb.xmax(),
       this_bb.ymax(),
       1.05*max_neighbour_dist, //This padding accounts for floating-point issues
-      max_neighbour_dist      
+      max_neighbour_dist
     );
 
     //Add points from one unit
     for(auto &seg: GetDensifiedBorderSegments(unit, max_neighbour_dist))
-      sg.addSegment(seg);    
+      sg.addSegment(seg);
 
     //Find the neighbours of the unit by overlapping bounding boxes. (This is
     //thread-safe!)
@@ -405,7 +389,7 @@ void FindNeighbouringUnits(
           //Both of the following lins must be critical since this unit could be
           //accessed by a neighbour or access a neighbour at the same time that
           //memory is being accessed by another thread.
-          #pragma omp critical 
+          #pragma omp critical
           {
             unit.neighbours.push_back(n);
             nunit.neighbours.push_back(gci);
@@ -460,12 +444,12 @@ void FindExternalChildren(
       this_bb.xmax(),
       this_bb.ymax(),
       1.05*edge_adjacency_dist, //This padding accounts for floating-point issues
-      edge_adjacency_dist      
+      edge_adjacency_dist
     );
 
     //Add points from the superunit into the segment grid
     for(auto &seg: GetDensifiedBorderSegments(unit, edge_adjacency_dist))
-      sgvec.at(supi).addSegment(seg);    
+      sgvec.at(supi).addSegment(seg);
   }
 
 
@@ -516,7 +500,7 @@ void CalcParentOverlap(
   GeoCollection &superunits,
   const double complete_inclusion_thresh, ///< A subunit with more fractional area than this in the parent are 100% included, all other potential parents are ignored
   const double not_included_thresh,       ///< A subunit with less fractional area than this in a parent disregards that parent
-  const double edge_adjacency_dist,       ///< Distance within which a subunit is considered to be on the border of a superunit.  
+  const double edge_adjacency_dist,       ///< Distance within which a subunit is considered to be on the border of a superunit.
   const bool   print_parent_columns       ///< If True, a column is printed for each possible parent indicating subunit inclusion fractions. Generally you should want this to be False.
 ){
   SpIndex supidx;
@@ -610,7 +594,7 @@ void CalcParentOverlap(
           sub.parents.emplace_back(p, 1);
           break;
         }
-      }      
+      }
 
       #ifdef COMPACTNESSLIB_WARNINGS
         if(sub.parents.size()==0){
