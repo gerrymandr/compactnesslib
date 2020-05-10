@@ -42,7 +42,7 @@ int FindOrientation(
 ){
   const int val = (q.y-p.y) * (r.x-q.x) - (q.x-p.x) * (r.y-q.y);
 
-  if (val == 0) 
+  if (val == 0)
     return 0;   //Colinear
   else if (val>0)
     return 1;   //Clockwise
@@ -100,7 +100,7 @@ BoundingBox& BoundingBox::operator+=(const BoundingBox& b){
 
 bool BoundingBox::overlaps(const BoundingBox &b) const {
   //NOTE: May want to think about whether `<=`/`>=` should be used here.
-  return    xmin()<b.xmax() && xmax()>b.xmin() 
+  return    xmin()<b.xmax() && xmax()>b.xmin()
          && ymin()<b.ymax() && ymax()>b.ymin();
 }
 
@@ -118,6 +118,10 @@ bool BoundingBox::overlaps(const BoundingBox &b) const {
 
 Ring::Ring(const std::vector<Point2D> &ptvec) {
   v = ptvec;
+}
+
+Ring::Ring(const BoundingBox &bbox){
+  v = complib::Points({{bbox.xmin(),bbox.ymin()},{bbox.xmax(),bbox.ymin()},{bbox.xmax(),bbox.ymax()},{bbox.xmin(),bbox.ymax()},{bbox.xmin(),bbox.ymin()}});
 }
 
 
@@ -203,7 +207,7 @@ const Ring& MultiPolygon::getHull() const {
   if(!hull.empty())
     return hull;
 
-  //Put all of the points into a ring 
+  //Put all of the points into a ring
   Ring temp;
   for(const auto &poly: v)
   for(const auto &ring: poly)
@@ -280,7 +284,7 @@ double area(const Ring &r){
     area += (r[j].x + r[i].x) * (r[j].y - r[i].y);
     j = i;
   }
-  
+
   area = area/2.;
 
   return std::abs(area);
@@ -296,7 +300,7 @@ double area(const Ring &r){
 //     area += (r[j].x * r[i].y) - (r[i].x * r[j].y);
 //     j = i;
 //   }
-  
+
 //   area = area/2.;
 
 //   return area;
@@ -330,7 +334,7 @@ double areaHoles(const Polygon &p){
 }
 
 double areaIncludingHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaIncludingHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaIncludingHoles(p);});
 }
 
 double areaExcludingHoles(const Polygon &poly){
@@ -342,7 +346,7 @@ double areaExcludingHoles(const MultiPolygon &mp){
 }
 
 double areaHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+areaHoles(p);});
 }
 
 double perimExcludingHoles(const Polygon &p){
@@ -354,7 +358,7 @@ double perimHoles(const Polygon &p){
 }
 
 double perimExcludingHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimExcludingHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimExcludingHoles(p);});
 }
 
 double perimIncludingHoles(const Polygon &p){
@@ -362,11 +366,11 @@ double perimIncludingHoles(const Polygon &p){
 }
 
 double perimIncludingHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimIncludingHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimIncludingHoles(p);});
 }
 
 double perimHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+perimHoles(p);});
 }
 
 
@@ -375,7 +379,7 @@ double hullAreaOuter(const Polygon &p){
 }
 
 double hullAreaPolygonOuterRings(const MultiPolygon &mp){
-  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+hullAreaOuter(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+hullAreaOuter(p);});
 }
 
 double hullAreaOfHoles(const Polygon &p){
@@ -383,7 +387,7 @@ double hullAreaOfHoles(const Polygon &p){
 }
 
 double hullAreaOfHoles(const MultiPolygon &mp){
-  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+hullAreaOfHoles(p);}); 
+  return std::accumulate(mp.begin(),mp.end(),0.0,[](const double b, const Polygon &p){ return b+hullAreaOfHoles(p);});
 }
 
 unsigned holeCount(const Polygon &p){
@@ -466,17 +470,17 @@ MultiPolygon GetBoundingCircle(const MultiPolygon &mp){
 
   // define the types of iterators through the points and their coordinates
   // ----------------------------------------------------------------------
-  typedef std::vector<std::vector<double> >::const_iterator PointIterator; 
+  typedef std::vector<std::vector<double> >::const_iterator PointIterator;
   typedef std::vector<double>::const_iterator CoordIterator;
 
   // create an instance of Miniball
   // ------------------------------
   typedef Miniball::
-    Miniball <Miniball::CoordAccessor<PointIterator, CoordIterator> > 
+    Miniball <Miniball::CoordAccessor<PointIterator, CoordIterator> >
     MB;
 
   MB mb (2, pts.begin(), pts.end());
-  
+
   const Point2D midpt(mb.center()[0], mb.center()[1]);
   const double radius = std::sqrt(mb.squared_radius());
   //"Computation time was "<< mb.get_time() << " seconds\n";
@@ -589,8 +593,8 @@ const double EPSILON_TINY = 1.0E-14;
 const double EPSILON_GENERAL = 1.192092896E-07;
 
 bool AreValuesEqual(
-  const double val1, 
-  const double val2, 
+  const double val1,
+  const double val2,
   const double tolerance
 ){
   return (val1 >= (val2 - tolerance) && val1 <= (val2 + tolerance));
@@ -598,7 +602,7 @@ bool AreValuesEqual(
 
 
 double PointToPointDistanceSquared(
-  const double p1x, const double p1y, 
+  const double p1x, const double p1y,
   const double p2x, const double p2y
 ){
   double dx = p2x - p1x;
@@ -607,7 +611,7 @@ double PointToPointDistanceSquared(
 }
 
 
-double PointSegmentDistanceSquared( 
+double PointSegmentDistanceSquared(
   const double px,  const double py,
   const double p1x, const double p1y,
   const double p2x, const double p2y,
@@ -620,7 +624,7 @@ double PointSegmentDistanceSquared(
   const double dp1y = py - p1y;
 
   const double segLenSquared = (dx * dx) + (dy * dy);
-  
+
   if (AreValuesEqual(segLenSquared, 0.0, EPSILON_MIN_VERTEX_DISTANCE_SQUARED)){
     // segment is a point.
     qx = p1x;
@@ -671,7 +675,7 @@ double PointSegmentDistanceSquared(
 }
 
 
-double SegmentSegmentDistanceSquared(   
+double SegmentSegmentDistanceSquared(
   const double p1x, const double p1y,
   const double p2x, const double p2y,
   const double p3x, const double p3y,

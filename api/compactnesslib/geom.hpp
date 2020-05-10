@@ -68,8 +68,9 @@ class Ring {
  public:
   Points v;
   Ring() = default;
-  Ring(const std::vector<Point2D> &ptvec);
-  mutable std::vector<Point2D> hull;
+  Ring(const Points &ptvec);
+  Ring(const BoundingBox &bbox);
+  mutable Points hull;
   Ring getHull() const;
   ClipperLib::Paths clipper_paths;
   EXPOSE_STL_VECTOR(v);
@@ -89,7 +90,7 @@ class MultiPolygon {
   //Values greater than 0 are the guaranteed minimum distance between points as
   //established by Densify(). Can be used to determine whether or not the MP has
   //been densified.
-  double densified = 0; 
+  double densified = 0;
   mutable Ring hull;
   const Ring& getHull() const;
   void toRadians();
@@ -217,7 +218,7 @@ std::pair<Point2D, Point2D> MostDistantPoints(const T &geom){
   std::pair<unsigned int, unsigned int> idx_maxpts;
   double maxdist = 0;
 
-  //TODO: There's a faster way to do this  
+  //TODO: There's a faster way to do this
   for(unsigned int i=0;i<hull.size();i++)
   for(unsigned int j=i+1;j<hull.size();j++){
     const double dist = EuclideanDistance(hull.at(i),hull.at(j));
