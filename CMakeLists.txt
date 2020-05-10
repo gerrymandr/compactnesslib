@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.9)
 
-project (compactnesslib 
+project (compactnesslib
   VERSION 1.0.0
   DESCRIPTION "Measures compactness of shapes, especially political districts"
   LANGUAGES CXX
@@ -10,6 +10,52 @@ project (compactnesslib
 # add_subdirectory(tests)
 
 find_package(OpenMP)
+
+add_library(libspatialindex
+  submodules/libspatialindex/src/mvrtree/Index.cc
+  submodules/libspatialindex/src/mvrtree/Node.cc
+  submodules/libspatialindex/src/mvrtree/Leaf.cc
+  submodules/libspatialindex/src/mvrtree/Statistics.cc
+  submodules/libspatialindex/src/mvrtree/MVRTree.cc
+  submodules/libspatialindex/src/tprtree/Index.cc
+  submodules/libspatialindex/src/tprtree/Node.cc
+  submodules/libspatialindex/src/tprtree/Leaf.cc
+  submodules/libspatialindex/src/tprtree/Statistics.cc
+  submodules/libspatialindex/src/tprtree/TPRTree.cc
+  submodules/libspatialindex/src/storagemanager/Buffer.cc
+  submodules/libspatialindex/src/storagemanager/RandomEvictionsBuffer.cc
+  submodules/libspatialindex/src/storagemanager/DiskStorageManager.cc
+  submodules/libspatialindex/src/storagemanager/MemoryStorageManager.cc
+  submodules/libspatialindex/src/rtree/RTree.cc
+  submodules/libspatialindex/src/rtree/BulkLoader.cc
+  submodules/libspatialindex/src/rtree/Index.cc
+  submodules/libspatialindex/src/rtree/Node.cc
+  submodules/libspatialindex/src/rtree/Leaf.cc
+  submodules/libspatialindex/src/rtree/Statistics.cc
+  submodules/libspatialindex/src/capi/IdVisitor.cc
+  submodules/libspatialindex/src/capi/Utility.cc
+  submodules/libspatialindex/src/capi/ObjVisitor.cc
+  submodules/libspatialindex/src/capi/Index.cc
+  submodules/libspatialindex/src/capi/DataStream.cc
+  submodules/libspatialindex/src/capi/BoundsQuery.cc
+  submodules/libspatialindex/src/capi/CustomStorage.cc
+  submodules/libspatialindex/src/capi/sidx_api.cc
+  submodules/libspatialindex/src/capi/CountVisitor.cc
+  submodules/libspatialindex/src/capi/LeafQuery.cc
+  submodules/libspatialindex/src/capi/Error.cc
+  submodules/libspatialindex/src/tools/rand48.cc
+  submodules/libspatialindex/src/tools/Tools.cc
+  submodules/libspatialindex/src/spatialindex/Point.cc
+  submodules/libspatialindex/src/spatialindex/LineSegment.cc
+  submodules/libspatialindex/src/spatialindex/TimePoint.cc
+  submodules/libspatialindex/src/spatialindex/MovingPoint.cc
+  submodules/libspatialindex/src/spatialindex/TimeRegion.cc
+  submodules/libspatialindex/src/spatialindex/SpatialIndexImpl.cc
+  submodules/libspatialindex/src/spatialindex/MovingRegion.cc
+  submodules/libspatialindex/src/spatialindex/Region.cc
+)
+target_include_directories(libspatialindex PUBLIC submodules/libspatialindex/include)
+
 
 add_library(compactnesslib
   src/bounded_scores.cpp
@@ -29,18 +75,6 @@ add_library(compactnesslib
   lib/shapelib/shptree.cpp
 
   lib/clipper/clipper.cpp
-
-  lib/spatialindex_c/rtree/BulkLoader.cpp
-  lib/spatialindex_c/rtree/Index.cpp
-  lib/spatialindex_c/rtree/Leaf.cpp
-  lib/spatialindex_c/rtree/Node.cpp
-  lib/spatialindex_c/rtree/RTree.cpp
-  lib/spatialindex_c/rtree/Statistics.cpp
-  lib/spatialindex_c/spatialindex/LineSegment.cpp
-  lib/spatialindex_c/spatialindex/Point.cpp
-  lib/spatialindex_c/spatialindex/Region.cpp
-  lib/spatialindex_c/storagemanager/MemoryStorageManager.cpp
-  lib/spatialindex_c/tools/Tools.cpp
 )
 
 target_include_directories(compactnesslib
@@ -54,6 +88,8 @@ target_compile_features(compactnesslib PUBLIC cxx_std_11)
 target_link_libraries(compactnesslib
 PRIVATE
   OpenMP::OpenMP_CXX
+PUBLIC
+  libspatialindex
 )
 
 add_executable(unittest

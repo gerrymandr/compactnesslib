@@ -1,0 +1,3 @@
+[submodule "submodules/libspatialindex"]
+	path = submodules/libspatialindex
+	url = https://github.com/r-barnes/libspatialindex.git
