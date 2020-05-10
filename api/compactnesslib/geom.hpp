@@ -113,7 +113,7 @@ class GeoCollection {
   std::string prj_str;
   void reverse();
   void correctWindingDirection();
-  void clipperify();
+  void clipperify(const double scale=1.0);
   EXPOSE_STL_VECTOR(v);
 };
 
@@ -182,20 +182,20 @@ unsigned PointCount<Ring>(const Ring &r);
 
 
 
-cl::Paths ConvertToClipper(const Ring &ring, const bool reversed);
-cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed);
+cl::Paths ConvertToClipper(const Ring &ring, const bool reversed, const double scale=1.0);
+cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed, const double scale=1.0);
 
 
 template<class T, class U>
-double IntersectionArea(const T &a, const U &b) {
+double IntersectionArea(const T &a, const U &b, const double scale=1.0) {
   cl::Clipper clpr;
   if(a.clipper_paths.empty()){
-    clpr.AddPaths(ConvertToClipper(a, false), cl::ptSubject, true);
+    clpr.AddPaths(ConvertToClipper(a, false, scale), cl::ptSubject, true);
   } else {
     clpr.AddPaths(a.clipper_paths, cl::ptSubject, true);
   }
   if(b.clipper_paths.empty()){
-    clpr.AddPaths(ConvertToClipper(b, false), cl::ptClip, true);
+    clpr.AddPaths(ConvertToClipper(b, false, scale), cl::ptClip, true);
   } else {
     clpr.AddPaths(b.clipper_paths, cl::ptClip, true);
   }

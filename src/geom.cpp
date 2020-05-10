@@ -263,9 +263,9 @@ void GeoCollection::correctWindingDirection(){
   processing later since these paths will be used to find intersection areas
   and other vector operations.
 */
-void GeoCollection::clipperify() {
+void GeoCollection::clipperify(const double scale) {
   for(unsigned int i=0;i<v.size();i++)
-    v[i].clipper_paths = ConvertToClipper(v[i], false);
+    v[i].clipper_paths = ConvertToClipper(v[i], false, scale);
 }
 
 
@@ -423,33 +423,33 @@ double diameterOfEntireMultiPolygon(const MultiPolygon &mp){
 
 
 
-cl::Paths ConvertToClipper(const Ring &ring, const bool reversed){
+cl::Paths ConvertToClipper(const Ring &ring, const bool reversed, const double scale){
   cl::Paths clipper_paths(1);
 
   auto &path = clipper_paths.at(0);
 
   if(!reversed){
     for(const auto &pt: ring)
-      path.emplace_back((long long)pt.x,(long long)pt.y);
+      path.emplace_back((long long)(pt.x*scale),(long long)(pt.y*scale));
   } else {
     for(auto pt=ring.rbegin();pt!=ring.rend();pt++)
-      path.emplace_back((long long)pt->x,(long long)pt->y);    
+      path.emplace_back((long long)(pt->x*scale),(long long)(pt->y*scale));
   }
 
   return clipper_paths;
 }
 
 
-cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed) {
+cl::Paths ConvertToClipper(const MultiPolygon &mp, const bool reversed, const double scale) {
   cl::Paths clipper_paths;
 
   for(const auto &poly: mp){
     //Send in outer perimter
-    clipper_paths.push_back(ConvertToClipper(poly.at(0), reversed).front());
+    clipper_paths.push_back(ConvertToClipper(poly.at(0), reversed, scale).front());
 
     //Send in the holes
     for(unsigned int i=1;i<poly.size();i++)
-      clipper_paths.push_back(ConvertToClipper(poly.at(i), !reversed).front());
+      clipper_paths.push_back(ConvertToClipper(poly.at(i), !reversed, scale).front());
   }
 
   return clipper_paths;
