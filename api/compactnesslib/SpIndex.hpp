@@ -10,7 +10,7 @@ namespace complib {
 
 class SpIndexData;
 
-typedef std::vector< std::pair<unsigned int, BoundingBox> > idbb;
+typedef std::vector< std::pair<SpatialIndex::id_type, BoundingBox> > idbb;
   
 class SpIndex {
  private:
@@ -35,20 +35,20 @@ class SpIndex {
 
     /* operations */
 
-    void insert( const unsigned int id, const BoundingBox &bb );
-    void insertDeferred( const unsigned int id, const BoundingBox &bb );
+    void insert( const SpatialIndex::id_type id, const BoundingBox &bb );
+    void insertDeferred( const SpatialIndex::id_type id, const BoundingBox &bb );
 
     /* queries */
 
-    std::vector<unsigned int> query( const BoundingBox &bb  ) const;
-    std::vector<unsigned int> query( const MultiPolygon &mp ) const;
-    std::vector<unsigned int> query( const Point2D &pt      ) const;
+    std::vector<SpatialIndex::id_type> query( const BoundingBox &bb  ) const;
+    std::vector<SpatialIndex::id_type> query( const MultiPolygon &mp ) const;
+    std::vector<SpatialIndex::id_type> query( const Point2D &pt      ) const;
 
 
 //    friend class SpIndexData; // for access to featureInfo()
 };
 
-void AddToSpIndex(const MultiPolygon &mp, SpIndex &sp, const unsigned int id, const double expandby);
+void AddToSpIndex(const MultiPolygon &mp, SpIndex &sp, const SpatialIndex::id_type id, const double expandby);
 
 }
 

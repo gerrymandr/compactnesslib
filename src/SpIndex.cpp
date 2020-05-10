@@ -13,10 +13,10 @@ SpatialIndex::Region BoundingBoxToRegion( const BoundingBox &rect ){
 
 class ObjVisitor : public SpatialIndex::IVisitor {
  private:
-  std::vector<unsigned int>& mList;
+  std::vector<SpatialIndex::id_type>& mList;
 
  public:
-  explicit ObjVisitor( std::vector<unsigned int> &list ) : mList( list ) {}
+  explicit ObjVisitor( std::vector<SpatialIndex::id_type> &list ) : mList( list ) {}
 
   void visitNode( const SpatialIndex::INode &n ) override {}
 
@@ -155,7 +155,7 @@ SpIndex& SpIndex::operator=( const SpIndex &other ){
   return *this;
 }
 
-void SpIndex::insert( unsigned int id, const BoundingBox &rect ){
+void SpIndex::insert( SpatialIndex::id_type id, const BoundingBox &rect ){
   SpatialIndex::Region r( BoundingBoxToRegion( rect ) );
 
   try {
@@ -169,23 +169,23 @@ void SpIndex::insert( unsigned int id, const BoundingBox &rect ){
 }
 }
 
-void SpIndex::insertDeferred( const unsigned int id, const BoundingBox &bb ){
+void SpIndex::insertDeferred( const SpatialIndex::id_type id, const BoundingBox &bb ){
   boxes_to_insert.emplace_back(id,bb);
 }
 
-std::vector<unsigned int> SpIndex::query( const MultiPolygon &mp  ) const {
+std::vector<SpatialIndex::id_type> SpIndex::query( const MultiPolygon &mp  ) const {
   return query(mp.bbox());
 }
 
-std::vector<unsigned int> SpIndex::query( const Point2D &pt       ) const {
+std::vector<SpatialIndex::id_type> SpIndex::query( const Point2D &pt       ) const {
   return query(BoundingBox(pt.x,pt.y,pt.x,pt.y));
 }
 
-std::vector<unsigned int> SpIndex::query( const BoundingBox &rect ) const {
+std::vector<SpatialIndex::id_type> SpIndex::query( const BoundingBox &rect ) const {
   const SpatialIndex::Region r( BoundingBoxToRegion(rect) );
 
   //Object that will show us what results we've found
-  std::vector<unsigned int> ret;
+  std::vector<SpatialIndex::id_type> ret;
   ObjVisitor visitor(ret);
 
   #pragma omp critical
@@ -200,7 +200,7 @@ std::vector<unsigned int> SpIndex::query( const BoundingBox &rect ) const {
   it with an \p id. The bounding box is expanded by \p expandby units outward in 
   all directions.
 */
-void AddToSpIndex(const MultiPolygon &mp, SpIndex &sp, const unsigned int id, const double expandby){
+void AddToSpIndex(const MultiPolygon &mp, SpIndex &sp, const SpatialIndex::id_type id, const double expandby){
   auto bb = mp.bbox();
   bb.expand(expandby);
   sp.insertDeferred(id, bb);
