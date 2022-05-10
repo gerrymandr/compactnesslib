@@ -1,8 +1,0 @@
-a.out
-*.o
-*.exe
-*.gcno
-*.gcda
-CMakeFiles
-*.gcov
-perf.data*
